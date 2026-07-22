@@ -1,0 +1,587 @@
+{
+  "info": {
+    "_postman_id": "hospital-api-tests",
+    "name": "Hospital API - Test Suite",
+    "description": "Comprehensive test suite for Hospital Management API with automated tests and data validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "description": "Base URL for the Hospital API"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT authentication token"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🧪 Setup Tests",
+      "description": "Initial setup and authentication tests",
+      "item": [
+        {
+          "name": "1. Create Admin User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Admin user created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 409]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.environment.set('token', response.token);",
+                  "        console.log('Admin token saved:', response.token);",
+                  "    }",
+                  "    if (response.data && response.data.user && response.data.user._id) {",
+                  "        pm.environment.set('adminId', response.data.user._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Hospital Admin\",\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"Admin123456\",\n  \"confirmPassword\": \"Admin123456\",\n  \"phone\": \"+14155552671\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "2. Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Admin login successful', function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains token', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('token');",
+                  "    pm.environment.set('token', response.token);",
+                  "    console.log('Admin token updated:', response.token);",
+                  "});",
+                  "",
+                  "pm.test('Response contains user data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.expect(response.data).to.have.property('user');",
+                  "    pm.expect(response.data.user.role).to.eql('admin');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"Admin123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏨 Clinic Tests",
+      "description": "Clinic CRUD operations tests",
+      "item": [
+        {
+          "name": "1. Create Test Clinic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Clinic created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains clinic data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.environment.set('testClinicId', response.data._id);",
+                  "    console.log('Test clinic ID saved:', response.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Cardiology Center\",\n  \"clinicNumber\": \"CL-TEST-001\",\n  \"description\": \"Test clinic for automated testing\",\n  \"address\": {\n    \"street\": \"123 Test Ave\",\n    \"city\": \"Test City\",\n    \"state\": \"TC\",\n    \"zipCode\": \"12345\",\n    \"country\": \"USA\"\n  },\n  \"phone\": \"+1234567890\",\n  \"email\": \"test@clinic.com\",\n  \"services\": [\"Consultation\", \"ECG\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/clinics",
+              "host": ["{{baseUrl}}"],
+              "path": ["clinics"]
+            }
+          }
+        },
+        {
+          "name": "2. Get All Clinics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Get all clinics successful', function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains clinics array', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.expect(response.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clinics",
+              "host": ["{{baseUrl}}"],
+              "path": ["clinics"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍⚕️ Doctor Tests",
+      "description": "Doctor CRUD operations tests",
+      "item": [
+        {
+          "name": "1. Create Test Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Doctor created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains doctor data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.environment.set('testDoctorId', response.data._id);",
+                  "    console.log('Test doctor ID saved:', response.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. Test Johnson\",\n  \"email\": \"test.doctor@hospital.com\",\n  \"password\": \"Doctor123456\",\n  \"phone\": \"+201001234567\",\n  \"specialization\": \"Cardiology\",\n  \"licenseNumber\": \"TEST12345\",\n  \"experience\": 5,\n  \"qualifications\": [\"MBBS\", \"MD\"],\n  \"clinics\": [\"{{testClinicId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctors",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Patient Tests",
+      "description": "Patient CRUD operations tests",
+      "item": [
+        {
+          "name": "1. Create Test Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Patient created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains patient data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.environment.set('testPatientId', response.data._id);",
+                  "    console.log('Test patient ID saved:', response.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Patient Smith\",\n  \"email\": \"test.patient@example.com\",\n  \"phone\": \"+1234567890\",\n  \"dateOfBirth\": \"1990-01-01\",\n  \"gender\": \"male\",\n  \"address\": {\n    \"street\": \"123 Test St\",\n    \"city\": \"Test City\",\n    \"state\": \"TC\",\n    \"zipCode\": \"12345\",\n    \"country\": \"USA\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Appointment Tests",
+      "description": "Appointment booking and management tests",
+      "item": [
+        {
+          "name": "1. Create Test Appointment",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const tomorrow = new Date();",
+                  "tomorrow.setDate(tomorrow.getDate() + 1);",
+                  "const dateString = tomorrow.toISOString().split('T')[0];",
+                  "pm.environment.set('testAppointmentDate', dateString);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Appointment created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains appointment data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.environment.set('testAppointmentId', response.data._id);",
+                  "    console.log('Test appointment ID saved:', response.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor\": \"{{testDoctorId}}\",\n  \"clinic\": \"{{testClinicId}}\",\n  \"type\": \"consultation\",\n  \"date\": \"{{testAppointmentDate}}\",\n  \"time\": \"10:00\",\n  \"MaxNumberOfPatients\": 1,\n  \"duration\": 30,\n  \"notes\": \"Test appointment for automated testing\",\n  \"status\": \"Scheduled\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointments",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments"]
+            }
+          }
+        },
+        {
+          "name": "2. Register Patient for Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Patient registration successful', function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains registration data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"{{testPatientId}}\",\n  \"reason\": \"Test consultation\",\n  \"symptoms\": \"Test symptoms for automated testing\",\n  \"notes\": \"Test registration\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointments/{{testAppointmentId}}/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "{{testAppointmentId}}", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧹 Cleanup Tests",
+      "description": "Cleanup test data",
+      "item": [
+        {
+          "name": "1. Delete Test Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Appointment deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/{{testAppointmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "{{testAppointmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "2. Delete Test Doctor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Doctor deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/{{testDoctorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors", "{{testDoctorId}}"]
+            }
+          }
+        },
+        {
+          "name": "3. Delete Test Patient",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Patient deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/{{testPatientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients", "{{testPatientId}}"]
+            }
+          }
+        },
+        {
+          "name": "4. Delete Test Clinic",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Clinic deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clinics/{{testClinicId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["clinics", "{{testClinicId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

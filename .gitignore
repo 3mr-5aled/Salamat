@@ -1,0 +1,49 @@
+# Dependency directories
+node_modules/
+
+# Production build artifacts
+dist/
+build/
+out/
+
+# Environment configurations
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+config.env
+*.env
+
+# IDE / System files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+.mongo/
+dump/
+
+# AI-related files, plans, and implementations (Gitignored per user request)
+*ai_implementation_plan*
+*ai_plan*
+*ai-plan*
+*ai.service*
+*ai.controller*
+*ai.routes*
+*ai.js*
+*ai.ts*
+*ai.tsx*
+ai/
+**/ai/
+**/*ai.service*
+**/*ai.controller*
+**/*ai.routes*
+**/*ai.js*
+**/*ai.ts*
+**/*ai.tsx*

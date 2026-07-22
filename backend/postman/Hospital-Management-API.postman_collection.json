@@ -1,0 +1,1205 @@
+{
+  "info": {
+    "_postman_id": "hospital-api-collection",
+    "name": "Hospital Management API",
+    "description": "Complete Hospital Management System API with role-based authentication, patient management, doctor management, clinic management, and appointment booking features.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "description": "Base URL for the Hospital API"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT authentication token (general)"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "description": "JWT authentication token for admin"
+    },
+    {
+      "key": "doctorToken",
+      "value": "",
+      "description": "JWT authentication token for doctor"
+    },
+    {
+      "key": "patientToken",
+      "value": "",
+      "description": "JWT authentication token for patient"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "User authentication and authorization endpoints organized by user roles",
+      "item": [
+        {
+          "name": "🏥 Patient Authentication",
+          "description": "Patient registration, login, and profile management",
+          "item": [
+            {
+              "name": "Patient Signup",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.token) {",
+                      "        pm.collectionVariables.set('patientToken', response.token);",
+                      "        console.log('Patient token saved from signup:', response.token);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Ahmed Mohamed Ali\",\n  \"email\": \"ahmed.patient@example.com\",\n  \"password\": \"PatientPass123!\",\n  \"confirmPassword\": \"PatientPass123!\",\n  \"phone\": \"01023456789\",\n  \"role\": \"patient\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"gender\": \"male\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/signup",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "signup"]
+                }
+              }
+            },
+            {
+              "name": "Patient Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.token) {",
+                      "        pm.collectionVariables.set('patientToken', response.token);",
+                      "        console.log('Patient token saved from login:', response.token);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"ahmed.patient@example.com\",\n  \"password\": \"PatientPass123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "Patient Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{patientToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "me"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "👨‍⚕️ Doctor Authentication",
+          "description": "Doctor registration, login, and profile management",
+          "item": [
+            {
+              "name": "Doctor Signup",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.token) {",
+                      "        pm.collectionVariables.set('doctorToken', response.token);",
+                      "        console.log('Doctor token saved from signup:', response.token);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Dr. Fatma Hassan Mohamed\",\n  \"email\": \"fatma.doctor@hospital.com\",\n  \"password\": \"DoctorPass123!\",\n  \"confirmPassword\": \"DoctorPass123!\",\n  \"phone\": \"01123456789\",\n  \"role\": \"doctor\",\n  \"dateOfBirth\": \"1985-03-20\",\n  \"gender\": \"female\",\n  \"specialization\": \"Cardiology\",\n  \"licenseNumber\": \"EG12345\",\n  \"experience\": 8\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/signup",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "signup"]
+                }
+              }
+            },
+            {
+              "name": "Doctor Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.token) {",
+                      "        pm.collectionVariables.set('doctorToken', response.token);",
+                      "        console.log('Doctor token saved from login:', response.token);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"fatma.doctor@hospital.com\",\n  \"password\": \"DoctorPass123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "Doctor Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{doctorToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "me"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "👨‍💼 Admin Authentication",
+          "description": "Admin registration, login, and management functions",
+          "item": [
+            {
+              "name": "Admin Signup",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.token) {",
+                      "        pm.collectionVariables.set('adminToken', response.token);",
+                      "        console.log('Admin token saved from signup:', response.token);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Omar Khaled Ibrahim\",\n  \"email\": \"omar.admin@hospital.com\",\n  \"password\": \"AdminPass123!\",\n  \"confirmPassword\": \"AdminPass123!\",\n  \"phone\": \"01223456789\",\n  \"role\": \"admin\",\n  \"dateOfBirth\": \"1980-08-10\",\n  \"gender\": \"male\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/signup",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "signup"]
+                }
+              }
+            },
+            {
+              "name": "Admin Login",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.token) {",
+                      "        pm.collectionVariables.set('adminToken', response.token);",
+                      "        pm.collectionVariables.set('token', response.token);",
+                      "        console.log('Admin token saved from login:', response.token);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"omar.admin@hospital.com\",\n  \"password\": \"AdminPass123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "Admin Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "me"]
+                }
+              }
+            },
+            {
+              "name": "Get All Users (Admin Only)",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/auth/admin/users",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "admin", "users"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "🔑 Common Auth Operations",
+          "description": "Shared authentication operations for all user roles",
+          "item": [
+            {
+              "name": "Forgot Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/forgot-password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "forgot-password"]
+                }
+              }
+            },
+            {
+              "name": "Reset Password",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"NewPassword123!\",\n  \"confirmPassword\": \"NewPassword123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/reset-password/:token",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "reset-password", ":token"],
+                  "variable": [
+                    {
+                      "key": "token",
+                      "value": "RESET_TOKEN_HERE"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Profile",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Updated Full Name\",\n  \"phone\": \"01098765432\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/me",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "me"]
+                }
+              }
+            },
+            {
+              "name": "Change Password",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"currentPassword\": \"OldPassword123!\",\n  \"password\": \"NewPassword123!\",\n  \"confirmPassword\": \"NewPassword123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/change-password",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "change-password"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "👨‍⚕️ Doctors",
+      "description": "Doctor management endpoints",
+      "item": [
+        {
+          "name": "Get All Doctors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/doctors?page=1&limit=10&sort=-createdAt",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "-createdAt"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Doctor by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "DOCTOR_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Doctor (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. Maha Abdel Rahman\",\n  \"email\": \"maha.doctor@hospital.com\",\n  \"phone\": \"01012345678\",\n  \"specialization\": \"Cardiology\",\n  \"licenseNumber\": \"EG-DOC12345\",\n  \"experience\": 10,\n  \"qualifications\": [\"MBBS\", \"MD Cardiology\"],\n  \"consultationFee\": 300,\n  \"department\": \"Cardiology Department\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctors",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors"]
+            }
+          }
+        },
+        {
+          "name": "Update Doctor (Admin/Doctor)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. Maha Abdel Rahman Updated\",\n  \"phone\": \"01012345679\",\n  \"experience\": 11,\n  \"consultationFee\": 350\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/doctors/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "DOCTOR_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Doctor (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/doctors/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["doctors", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "DOCTOR_ID_HERE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 Patients",
+      "description": "Patient management endpoints",
+      "item": [
+        {
+          "name": "Get All Patients (Admin/Doctor)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients?page=1&limit=10&sort=-createdAt",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "-createdAt"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Patient by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{patientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "PATIENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Patient (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Yasmin Ahmed Mohamed\",\n  \"email\": \"yasmin.patient@example.com\",\n  \"phone\": \"01087654321\",\n  \"dateOfBirth\": \"1985-05-15\",\n  \"gender\": \"female\",\n  \"address\": {\n    \"street\": \"123 El Tahrir Street\",\n    \"city\": \"Cairo\",\n    \"state\": \"Cairo\",\n    \"zipCode\": \"11511\",\n    \"country\": \"Egypt\"\n  },\n  \"emergencyContact\": {\n    \"fullName\": \"Mohamed Ahmed\",\n    \"phone\": \"01187654321\",\n    \"relationship\": \"Husband\"\n  },\n  \"bloodType\": \"O+\",\n  \"allergies\": [\"Penicillin\"],\n  \"medicalHistory\": [\"Hypertension\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients"]
+            }
+          }
+        },
+        {
+          "name": "Update Patient",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{patientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"01087654322\",\n  \"address\": {\n    \"street\": \"456 New Address Street\",\n    \"city\": \"Giza\",\n    \"state\": \"Giza\",\n    \"zipCode\": \"12611\",\n    \"country\": \"Egypt\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "PATIENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Patient (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/patients/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "PATIENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏨 Clinics",
+      "description": "Clinic management endpoints",
+      "item": [
+        {
+          "name": "Get All Clinics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clinics?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["clinics"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Clinic by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clinics/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["clinics", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CLINIC_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Clinic (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cairo Cardiology Center\",\n  \"description\": \"Specialized cardiology clinic with state-of-the-art equipment\",\n  \"address\": {\n    \"street\": \"456 Kasr El Aini Street\",\n    \"city\": \"Cairo\",\n    \"state\": \"Cairo\",\n    \"zipCode\": \"11562\",\n    \"country\": \"Egypt\"\n  },\n  \"phone\": \"0223456789\",\n  \"email\": \"info@cairocardiologycenter.com\",\n  \"services\": [\"ECG\", \"Echocardiography\", \"Stress Testing\", \"Consultation\"],\n  \"workingHours\": {\n    \"monday\": { \"open\": \"08:00\", \"close\": \"17:00\" },\n    \"tuesday\": { \"open\": \"08:00\", \"close\": \"17:00\" },\n    \"wednesday\": { \"open\": \"08:00\", \"close\": \"17:00\" },\n    \"thursday\": { \"open\": \"08:00\", \"close\": \"17:00\" },\n    \"friday\": { \"open\": \"08:00\", \"close\": \"14:00\" }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/clinics",
+              "host": ["{{baseUrl}}"],
+              "path": ["clinics"]
+            }
+          }
+        },
+        {
+          "name": "Update Clinic (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated specialized cardiology clinic with advanced equipment\",\n  \"phone\": \"0223456790\",\n  \"services\": [\"ECG\", \"Echocardiography\", \"Stress Testing\", \"Consultation\", \"Holter Monitoring\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/clinics/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["clinics", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CLINIC_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Clinic (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clinics/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["clinics", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CLINIC_ID_HERE"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Appointments",
+      "description": "Appointment management and booking endpoints",
+      "item": [
+        {
+          "name": "Get All Appointments (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments?page=1&limit=10&status=available",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "available"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Appointment by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "APPOINTMENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Appointment (Doctor/Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{doctorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor\": \"DOCTOR_ID_HERE\",\n  \"clinic\": \"CLINIC_ID_HERE\",\n  \"type\": \"consultation\",\n  \"date\": \"2025-01-15\",\n  \"time\": \"10:00\",\n  \"duration\": 30,\n  \"MaxNumberOfPatients\": 1,\n  \"status\": \"Scheduled\",\n  \"priority\": \"normal\",\n  \"notes\": \"Regular consultation appointment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointments",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments"]
+            }
+          }
+        },
+        {
+          "name": "Update Appointment (Doctor/Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{doctorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timeSlot\": {\n    \"start\": \"11:00\",\n    \"end\": \"11:30\"\n  },\n  \"price\": 350,\n  \"status\": \"available\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "APPOINTMENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register for Appointment (Patient)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{patientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"PATIENT_ID_HERE\",\n  \"symptoms\": \"Chest pain, shortness of breath\",\n  \"prescriptions\": [],\n  \"medicalRecords\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/appointments/:id/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", ":id", "register"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "APPOINTMENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Appointment Registration (Patient)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{patientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/:id/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", ":id", "cancel"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "APPOINTMENT_ID_HERE"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Patient Appointments",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{patientToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/my-appointments",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "my-appointments"]
+            }
+          }
+        },
+        {
+          "name": "Get Doctor Appointments",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{doctorToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/appointments/doctor-appointments",
+              "host": ["{{baseUrl}}"],
+              "path": ["appointments", "doctor-appointments"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

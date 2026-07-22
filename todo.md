@@ -1,0 +1,9 @@
+- [x] landing page
+- [ ] error handling
+- [ ] client error friendly message
+- [ ] check for refactor
+- [ ] OWASP check
+- [ ] protected routes
+- [ ] potential UI enhancements
+- [ ] potential UX enhancements
+- [ ] change browser default confirmation modal

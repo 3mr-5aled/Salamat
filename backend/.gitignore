@@ -1,0 +1,93 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+config.env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+!.env.example
+
+# IDE and editor files
+Hospital-STD.code-workspace
+Hospital-API.code-workspace
+*.code-workspace
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary and summary files
+*_COMPLETION.md
+PHASE*.md
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/*.log
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# Build outputs
+dist/
+build/
+
+# Temporary files
+tmp/
+temp/
+
+# Package files
+*.tgz
+*.tar.gz
+
+# Lock files (keep package-lock.json for consistency)
+# package-lock.json
+yarn.lock
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads directory
+uploads/*
+!uploads/.gitkeep
+public/uploads/
+
+# Screenshots (optional - uncomment to ignore)
+# screenshots/*.png
+# screenshots/*.jpg
+
+# Cache directories
+.cache/
+.parcel-cache/

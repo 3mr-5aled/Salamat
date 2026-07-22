@@ -1,0 +1,28 @@
+{
+  "name": "hospital-api-tests",
+  "version": "1.0.0",
+  "description": "Postman test collections and automation scripts for Hospital Management API",
+  "main": "run-tests.js",
+  "scripts": {
+    "test": "node run-tests.js",
+    "test:dev": "newman run Hospital-API-TestSuite.postman_collection.json -e environments/Hospital-API-Development.postman_environment.json --reporters cli,html --reporter-html-export test-results/dev-report.html",
+    "test:staging": "newman run Hospital-API-TestSuite.postman_collection.json -e environments/Hospital-API-Staging.postman_environment.json --reporters cli,html --reporter-html-export test-results/staging-report.html",
+    "test:prod": "newman run Hospital-API-TestSuite.postman_collection.json -e environments/Hospital-API-Production.postman_environment.json --reporters cli,html --reporter-html-export test-results/prod-report.html",
+    "test:ci": "newman run Hospital-API-TestSuite.postman_collection.json -e environments/Hospital-API-Development.postman_environment.json --reporters cli,json --reporter-json-export test-results/ci-report.json --bail",
+    "test:collection": "newman run Hospital-Management-API.postman_collection.json -e environments/Hospital-API-Development.postman_environment.json --reporters cli,html --reporter-html-export test-results/collection-report.html"
+  },
+  "keywords": [
+    "hospital",
+    "api",
+    "testing",
+    "postman",
+    "newman",
+    "automation"
+  ],
+  "author": "Hospital Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "newman": "^6.0.0",
+    "newman-reporter-html": "^1.0.5"
+  }
+}

@@ -1,0 +1,4069 @@
+{
+  "collection": {
+    "_": {
+      "postman_id": "hospital-api-tests"
+    },
+    "item": [
+      {
+        "id": "c6e5ab6a-9718-44e2-89fa-8514c83cea98",
+        "name": "🧪 Setup Tests",
+        "description": {
+          "content": "Initial setup and authentication tests",
+          "type": "text/plain"
+        },
+        "item": [
+          {
+            "id": "0104418d-c474-4445-aa25-6f475b0c0869",
+            "name": "1. Create Admin User",
+            "request": {
+              "url": {
+                "path": ["auth", "signup"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"fullName\": \"Hospital Admin\",\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"Admin123456\",\n  \"confirmPassword\": \"Admin123456\",\n  \"phone\": \"+14155552671\",\n  \"role\": \"admin\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "e83183f2-e8ac-4800-9c7a-e1ff04cf85c8",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Admin user created successfully', function () {",
+                    "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 409]);",
+                    "});",
+                    "",
+                    "if (pm.response.code === 201 || pm.response.code === 200) {",
+                    "    const response = pm.response.json();",
+                    "    if (response.token) {",
+                    "        pm.environment.set('token', response.token);",
+                    "        console.log('Admin token saved:', response.token);",
+                    "    }",
+                    "    if (response.data && response.data.user && response.data.user._id) {",
+                    "        pm.environment.set('adminId', response.data.user._id);",
+                    "    }",
+                    "}"
+                  ],
+                  "_lastExecutionId": "1b672b57-1c64-4215-ac1d-056a879e8068"
+                }
+              }
+            ]
+          },
+          {
+            "id": "2f6a3076-fb7c-4716-9438-b47d8a651ced",
+            "name": "2. Admin Login",
+            "request": {
+              "url": {
+                "path": ["auth", "login"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"Admin123456\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "1f8020aa-3af9-468b-a251-9119ad7d0474",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Admin login successful', function () {",
+                    "    pm.expect(pm.response.code).to.eql(200);",
+                    "});",
+                    "",
+                    "pm.test('Response contains token', function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('token');",
+                    "    pm.environment.set('token', response.token);",
+                    "    console.log('Admin token updated:', response.token);",
+                    "});",
+                    "",
+                    "pm.test('Response contains user data', function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('data');",
+                    "    pm.expect(response.data).to.have.property('user');",
+                    "    pm.expect(response.data.user.role).to.eql('admin');",
+                    "});"
+                  ],
+                  "_lastExecutionId": "f0eb9d73-2a7f-4844-ace1-ba3380be599a"
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "649598ff-aca5-4bf3-937b-613fd7ab513b",
+        "name": "🏨 Clinic Tests",
+        "description": {
+          "content": "Clinic CRUD operations tests",
+          "type": "text/plain"
+        },
+        "item": [
+          {
+            "id": "c507343c-30ad-4db2-b335-4c56852f8ef4",
+            "name": "1. Create Test Clinic",
+            "request": {
+              "url": {
+                "path": ["clinics"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Test Cardiology Center\",\n  \"clinicNumber\": \"CL-TEST-001\",\n  \"description\": \"Test clinic for automated testing\",\n  \"address\": {\n    \"street\": \"123 Test Ave\",\n    \"city\": \"Test City\",\n    \"state\": \"TC\",\n    \"zipCode\": \"12345\",\n    \"country\": \"USA\"\n  },\n  \"phone\": \"+1234567890\",\n  \"email\": \"test@clinic.com\",\n  \"services\": [\"Consultation\", \"ECG\"]\n}"
+              },
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "type": "string",
+                    "value": "{{token}}",
+                    "key": "token"
+                  }
+                ]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "9af2d85c-559b-41f8-a397-e3d3be944d9b",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Clinic created successfully', function () {",
+                    "    pm.expect(pm.response.code).to.eql(201);",
+                    "});",
+                    "",
+                    "pm.test('Response contains clinic data', function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('data');",
+                    "    pm.environment.set('testClinicId', response.data._id);",
+                    "    console.log('Test clinic ID saved:', response.data._id);",
+                    "});"
+                  ],
+                  "_lastExecutionId": "8852ca86-78ad-4bc3-b671-be4c2704a813"
+                }
+              }
+            ]
+          },
+          {
+            "id": "36ad80b8-a559-4def-812b-024fe777a24a",
+            "name": "2. Get All Clinics",
+            "request": {
+              "url": {
+                "path": ["clinics"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "method": "GET"
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "c3243653-1a19-44ef-9959-d534439d95b2",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Get all clinics successful', function () {",
+                    "    pm.expect(pm.response.code).to.eql(200);",
+                    "});",
+                    "",
+                    "pm.test('Response contains clinics array', function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('data');",
+                    "    pm.expect(response.data).to.be.an('array');",
+                    "});"
+                  ],
+                  "_lastExecutionId": "5a214ef3-9754-4326-9ccd-1e07acbfb0d3"
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "58a4fc5e-ecc9-4114-ad6a-29c103d3fb36",
+        "name": "👨‍⚕️ Doctor Tests",
+        "description": {
+          "content": "Doctor CRUD operations tests",
+          "type": "text/plain"
+        },
+        "item": [
+          {
+            "id": "a8df66a5-2c35-4b7d-9d93-094c1cab31ad",
+            "name": "1. Create Test Doctor",
+            "request": {
+              "url": {
+                "path": ["doctors"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"fullName\": \"Dr. Test Johnson\",\n  \"email\": \"test.doctor@hospital.com\",\n  \"password\": \"Doctor123456\",\n  \"phone\": \"+201001234567\",\n  \"specialization\": \"Cardiology\",\n  \"licenseNumber\": \"TEST12345\",\n  \"experience\": 5,\n  \"qualifications\": [\"MBBS\", \"MD\"],\n  \"clinics\": [\"{{testClinicId}}\"]\n}"
+              },
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "type": "string",
+                    "value": "{{token}}",
+                    "key": "token"
+                  }
+                ]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "7e20283e-2d4e-400e-88c8-ae7c8588d21e",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Doctor created successfully', function () {",
+                    "    pm.expect(pm.response.code).to.eql(201);",
+                    "});",
+                    "",
+                    "pm.test('Response contains doctor data', function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('data');",
+                    "    pm.environment.set('testDoctorId', response.data._id);",
+                    "    console.log('Test doctor ID saved:', response.data._id);",
+                    "});"
+                  ],
+                  "_lastExecutionId": "0f8e3d31-5a0d-47df-9f20-e49045e89bd2"
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "0b8c1d28-26ca-46d3-b92e-8acc4ce73151",
+        "name": "🏥 Patient Tests",
+        "description": {
+          "content": "Patient CRUD operations tests",
+          "type": "text/plain"
+        },
+        "item": [
+          {
+            "id": "914a80f1-b4f4-4f2a-8682-8a1d6efbbb1f",
+            "name": "1. Create Test Patient",
+            "request": {
+              "url": {
+                "path": ["patients"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Test Patient Smith\",\n  \"email\": \"test.patient@example.com\",\n  \"phone\": \"+1234567890\",\n  \"dateOfBirth\": \"1990-01-01\",\n  \"gender\": \"male\",\n  \"address\": {\n    \"street\": \"123 Test St\",\n    \"city\": \"Test City\",\n    \"state\": \"TC\",\n    \"zipCode\": \"12345\",\n    \"country\": \"USA\"\n  }\n}"
+              },
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "type": "string",
+                    "value": "{{token}}",
+                    "key": "token"
+                  }
+                ]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "99beead0-e41d-4be4-8fb3-d43c6b4ffaf3",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Patient created successfully', function () {",
+                    "    pm.expect(pm.response.code).to.eql(201);",
+                    "});",
+                    "",
+                    "pm.test('Response contains patient data', function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('data');",
+                    "    pm.environment.set('testPatientId', response.data._id);",
+                    "    console.log('Test patient ID saved:', response.data._id);",
+                    "});"
+                  ],
+                  "_lastExecutionId": "918b8170-bfda-4445-98d0-c0a8ba333674"
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "ab3ca98f-c07d-43d6-a4f4-28c2c8605720",
+        "name": "📅 Appointment Tests",
+        "description": {
+          "content": "Appointment booking and management tests",
+          "type": "text/plain"
+        },
+        "item": [
+          {
+            "id": "2d246b4a-d334-49aa-931c-f9672c3822c5",
+            "name": "1. Create Test Appointment",
+            "request": {
+              "url": {
+                "path": ["appointments"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"doctor\": \"{{testDoctorId}}\",\n  \"clinic\": \"{{testClinicId}}\",\n  \"type\": \"consultation\",\n  \"date\": \"{{testAppointmentDate}}\",\n  \"time\": \"10:00\",\n  \"MaxNumberOfPatients\": 1,\n  \"duration\": 30,\n  \"notes\": \"Test appointment for automated testing\",\n  \"status\": \"Scheduled\"\n}"
+              },
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "type": "string",
+                    "value": "{{token}}",
+                    "key": "token"
+                  }
+                ]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "prerequest",
+                "script": {
+                  "id": "b97c6086-299b-4792-b587-8ce3e6cb271c",
+                  "type": "text/javascript",
+                  "exec": [
+                    "const tomorrow = new Date();",
+                    "tomorrow.setDate(tomorrow.getDate() + 1);",
+                    "const dateString = tomorrow.toISOString().split('T')[0];",
+                    "pm.environment.set('testAppointmentDate', dateString);"
+                  ],
+                  "_lastExecutionId": "1b032cf5-ab7a-4c88-9285-80584db435c2"
+                }
+              },
+              {
+                "listen": "test",
+                "script": {
+                  "id": "8880d767-9714-4a94-a9a3-0f8ea51cf70c",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Appointment created successfully', function () {",
+                    "    pm.expect(pm.response.code).to.eql(201);",
+                    "});",
+                    "",
+                    "pm.test('Response contains appointment data', function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('data');",
+                    "    pm.environment.set('testAppointmentId', response.data._id);",
+                    "    console.log('Test appointment ID saved:', response.data._id);",
+                    "});"
+                  ],
+                  "_lastExecutionId": "74c633b4-2231-4a2d-b7cb-1cf098c3ce0f"
+                }
+              }
+            ]
+          },
+          {
+            "id": "19e166d3-8bfd-4a49-9813-93e270879862",
+            "name": "2. Register Patient for Appointment",
+            "request": {
+              "url": {
+                "path": ["appointments", "{{testAppointmentId}}", "register"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "method": "POST",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"patientId\": \"{{testPatientId}}\",\n  \"reason\": \"Test consultation\",\n  \"symptoms\": \"Test symptoms for automated testing\",\n  \"notes\": \"Test registration\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "ac0de4e4-d0b1-4087-b0ee-f8ce437995a7",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Patient registration successful', function () {",
+                    "    pm.expect(pm.response.code).to.eql(200);",
+                    "});",
+                    "",
+                    "pm.test('Response contains registration data', function () {",
+                    "    const response = pm.response.json();",
+                    "    pm.expect(response).to.have.property('data');",
+                    "});"
+                  ],
+                  "_lastExecutionId": "c928c98f-369c-4ad2-8110-97a4904aa829"
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      },
+      {
+        "id": "0304883d-03d7-42aa-aa7f-c961c761cca1",
+        "name": "🧹 Cleanup Tests",
+        "description": {
+          "content": "Cleanup test data",
+          "type": "text/plain"
+        },
+        "item": [
+          {
+            "id": "01adfafc-0566-471f-9f6f-14b887a0ab6c",
+            "name": "1. Delete Test Appointment",
+            "request": {
+              "url": {
+                "path": ["appointments", "{{testAppointmentId}}"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "method": "DELETE",
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "type": "string",
+                    "value": "{{token}}",
+                    "key": "token"
+                  }
+                ]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "2e7e8f0b-dd59-4d71-a8b2-89528948733a",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Appointment deleted successfully', function () {",
+                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                    "});"
+                  ],
+                  "_lastExecutionId": "a68cce40-95a9-4c88-92b1-5d096ff37e9a"
+                }
+              }
+            ]
+          },
+          {
+            "id": "194ea28c-cdc2-4f0a-b982-9895c1d9f4bc",
+            "name": "2. Delete Test Doctor",
+            "request": {
+              "url": {
+                "path": ["doctors", "{{testDoctorId}}"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "method": "DELETE",
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "type": "string",
+                    "value": "{{token}}",
+                    "key": "token"
+                  }
+                ]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "dc255042-7d1f-4aec-a6b6-31f37009d764",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Doctor deleted successfully', function () {",
+                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                    "});"
+                  ],
+                  "_lastExecutionId": "55e2eca0-815f-4dcc-b8a0-9021e385801e"
+                }
+              }
+            ]
+          },
+          {
+            "id": "b89abe4d-bda0-4f91-848e-839292bfd411",
+            "name": "3. Delete Test Patient",
+            "request": {
+              "url": {
+                "path": ["patients", "{{testPatientId}}"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "method": "DELETE",
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "type": "string",
+                    "value": "{{token}}",
+                    "key": "token"
+                  }
+                ]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "7e99af1a-6659-4847-800e-9217551240f1",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Patient deleted successfully', function () {",
+                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                    "});"
+                  ],
+                  "_lastExecutionId": "8fdc0f33-8b80-4a69-b188-52a61387e4be"
+                }
+              }
+            ]
+          },
+          {
+            "id": "d40d0cb2-a059-4046-b071-e89864decdb2",
+            "name": "4. Delete Test Clinic",
+            "request": {
+              "url": {
+                "path": ["clinics", "{{testClinicId}}"],
+                "host": ["{{baseUrl}}"],
+                "query": [],
+                "variable": []
+              },
+              "method": "DELETE",
+              "auth": {
+                "type": "bearer",
+                "bearer": [
+                  {
+                    "type": "string",
+                    "value": "{{token}}",
+                    "key": "token"
+                  }
+                ]
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "id": "2dfda72e-54b8-4e0c-b2e6-1cb304dbf672",
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Clinic deleted successfully', function () {",
+                    "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                    "});"
+                  ],
+                  "_lastExecutionId": "19604399-83f7-4bb8-a13b-e24102143a63"
+                }
+              }
+            ]
+          }
+        ],
+        "event": []
+      }
+    ],
+    "auth": {
+      "type": "bearer",
+      "bearer": [
+        {
+          "type": "string",
+          "value": "{{token}}",
+          "key": "token"
+        }
+      ]
+    },
+    "event": [],
+    "variable": [
+      {
+        "description": {
+          "content": "Base URL for the Hospital API",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "http://localhost:3000/api/v1",
+        "key": "baseUrl"
+      },
+      {
+        "description": {
+          "content": "JWT authentication token",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "",
+        "key": "token"
+      }
+    ],
+    "info": {
+      "_postman_id": "hospital-api-tests",
+      "name": "Hospital API - Test Suite",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "description": {
+        "content": "Comprehensive test suite for Hospital Management API with automated tests and data validation",
+        "type": "text/plain"
+      }
+    }
+  },
+  "environment": {
+    "_": {
+      "postman_variable_scope": "environment"
+    },
+    "id": "hospital-api-environment",
+    "name": "Hospital API - Development",
+    "values": [
+      {
+        "description": {
+          "content": "Base URL for the Hospital API (Development)",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "http://localhost:8000/api/v1",
+        "key": "baseUrl"
+      },
+      {
+        "description": {
+          "content": "Admin email for testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "admin@hospital.com",
+        "key": "adminEmail"
+      },
+      {
+        "description": {
+          "content": "Admin password for testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "Admin123456",
+        "key": "adminPassword"
+      },
+      {
+        "description": {
+          "content": "Doctor email for testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "doctor@hospital.com",
+        "key": "doctorEmail"
+      },
+      {
+        "description": {
+          "content": "Doctor password for testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "Doctor123456",
+        "key": "doctorPassword"
+      },
+      {
+        "description": {
+          "content": "Patient email for testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "patient@hospital.com",
+        "key": "patientEmail"
+      },
+      {
+        "description": {
+          "content": "Patient password for testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "Patient123456",
+        "key": "patientPassword"
+      },
+      {
+        "description": {
+          "content": "ID of test doctor created during testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "6a440746dbc6ebc1725fc873",
+        "key": "testDoctorId"
+      },
+      {
+        "description": {
+          "content": "ID of test patient created during testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "6a440747dbc6ebc1725fc876",
+        "key": "testPatientId"
+      },
+      {
+        "description": {
+          "content": "ID of test clinic created during testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "6a440743dbc6ebc1725fc86c",
+        "key": "testClinicId"
+      },
+      {
+        "description": {
+          "content": "ID of test appointment created during testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "6a440749dbc6ebc1725fc87c",
+        "key": "testAppointmentId"
+      },
+      {
+        "description": {
+          "content": "ID of test appointment type created during testing",
+          "type": "text/plain"
+        },
+        "type": "any",
+        "value": "",
+        "key": "testAppointmentTypeId"
+      },
+      {
+        "type": "any",
+        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+        "key": "token"
+      },
+      {
+        "type": "any",
+        "value": "6a440740dbc6ebc1725fc865",
+        "key": "adminId"
+      },
+      {
+        "type": "any",
+        "value": "2026-07-01",
+        "key": "testAppointmentDate"
+      }
+    ]
+  },
+  "globals": {
+    "id": "c6280d68-67d3-4617-a97f-c84da28b94eb",
+    "values": []
+  },
+  "run": {
+    "stats": {
+      "iterations": {
+        "total": 1,
+        "pending": 0,
+        "failed": 0
+      },
+      "items": {
+        "total": 12,
+        "pending": 0,
+        "failed": 0
+      },
+      "scripts": {
+        "total": 13,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequests": {
+        "total": 12,
+        "pending": 0,
+        "failed": 0
+      },
+      "requests": {
+        "total": 12,
+        "pending": 0,
+        "failed": 0
+      },
+      "tests": {
+        "total": 12,
+        "pending": 0,
+        "failed": 0
+      },
+      "assertions": {
+        "total": 20,
+        "pending": 0,
+        "failed": 0
+      },
+      "testScripts": {
+        "total": 12,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequestScripts": {
+        "total": 1,
+        "pending": 0,
+        "failed": 0
+      }
+    },
+    "timings": {
+      "responseAverage": 287.0833333333333,
+      "responseMin": 115,
+      "responseMax": 502,
+      "responseSd": 146.98948847527234,
+      "dnsAverage": 0,
+      "dnsMin": 0,
+      "dnsMax": 0,
+      "dnsSd": 0,
+      "firstByteAverage": 0,
+      "firstByteMin": 0,
+      "firstByteMax": 0,
+      "firstByteSd": 0,
+      "started": 1782843199162,
+      "completed": 1782843215870
+    },
+    "executions": [
+      {
+        "cursor": {
+          "position": 0,
+          "iteration": 0,
+          "length": 12,
+          "cycles": 1,
+          "empty": false,
+          "eof": false,
+          "bof": true,
+          "cr": false,
+          "ref": "a2850890-24ee-4c09-9912-978d6a2b733c",
+          "httpRequestId": "32f9362a-9180-473c-8826-0460880e011f"
+        },
+        "item": {
+          "id": "0104418d-c474-4445-aa25-6f475b0c0869",
+          "name": "1. Create Admin User",
+          "request": {
+            "url": {
+              "path": ["auth", "signup"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Hospital Admin\",\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"Admin123456\",\n  \"confirmPassword\": \"Admin123456\",\n  \"phone\": \"+14155552671\",\n  \"role\": \"admin\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e83183f2-e8ac-4800-9c7a-e1ff04cf85c8",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Admin user created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 409]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201 || pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.environment.set('token', response.token);",
+                  "        console.log('Admin token saved:', response.token);",
+                  "    }",
+                  "    if (response.data && response.data.user && response.data.user._id) {",
+                  "        pm.environment.set('adminId', response.data.user._id);",
+                  "    }",
+                  "}"
+                ],
+                "_lastExecutionId": "1b672b57-1c64-4215-ac1d-056a879e8068"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "auth", "signup"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "7508dfc6-5937-4b0b-b8ed-66575f22f2eb",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "178",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"fullName\": \"Hospital Admin\",\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"Admin123456\",\n  \"confirmPassword\": \"Admin123456\",\n  \"phone\": \"+14155552671\",\n  \"role\": \"admin\"\n}"
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "93df8f5a-cfb0-4f56-9553-0b1800140d29",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9999"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:20 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "660"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"294-1r19OtidKAu36Lx+K+KgXnKM5SQ\""
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123, 34, 115, 116, 97, 116, 117, 115, 34, 58, 34, 115, 117, 99,
+              99, 101, 115, 115, 34, 44, 34, 109, 101, 115, 115, 97, 103, 101,
+              34, 58, 34, 65, 100, 109, 105, 110, 32, 114, 101, 103, 105, 115,
+              116, 101, 114, 101, 100, 32, 115, 117, 99, 99, 101, 115, 115, 102,
+              117, 108, 108, 121, 34, 44, 34, 116, 111, 107, 101, 110, 34, 58,
+              34, 101, 121, 74, 104, 98, 71, 99, 105, 79, 105, 74, 73, 85, 122,
+              73, 49, 78, 105, 73, 115, 73, 110, 82, 53, 99, 67, 73, 54, 73,
+              107, 112, 88, 86, 67, 74, 57, 46, 101, 121, 74, 49, 99, 50, 86,
+              121, 83, 87, 81, 105, 79, 105, 73, 50, 89, 84, 81, 48, 77, 68, 99,
+              48, 77, 71, 82, 105, 89, 122, 90, 108, 89, 109, 77, 120, 78, 122,
+              73, 49, 90, 109, 77, 52, 78, 106, 85, 105, 76, 67, 74, 112, 89,
+              88, 81, 105, 79, 106, 69, 51, 79, 68, 73, 52, 78, 68, 77, 121, 77,
+              68, 65, 115, 73, 109, 86, 52, 99, 67, 73, 54, 77, 84, 99, 53, 77,
+              68, 89, 120, 79, 84, 73, 119, 77, 72, 48, 46, 83, 99, 116, 49,
+              122, 102, 115, 50, 87, 77, 110, 97, 99, 82, 109, 100, 87, 86, 112,
+              100, 112, 103, 111, 82, 89, 76, 98, 119, 51, 69, 121, 104, 78, 49,
+              51, 73, 73, 95, 101, 95, 109, 76, 107, 34, 44, 34, 100, 97, 116,
+              97, 34, 58, 123, 34, 117, 115, 101, 114, 34, 58, 123, 34, 95, 105,
+              100, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52, 48, 100, 98, 99, 54,
+              101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 54, 53, 34, 44, 34, 102,
+              117, 108, 108, 78, 97, 109, 101, 34, 58, 34, 72, 111, 115, 112,
+              105, 116, 97, 108, 32, 65, 100, 109, 105, 110, 34, 44, 34, 101,
+              109, 97, 105, 108, 34, 58, 34, 97, 100, 109, 105, 110, 64, 104,
+              111, 115, 112, 105, 116, 97, 108, 46, 99, 111, 109, 34, 44, 34,
+              114, 111, 108, 101, 34, 58, 34, 97, 100, 109, 105, 110, 34, 44,
+              34, 112, 104, 111, 110, 101, 34, 58, 34, 43, 49, 52, 49, 53, 53,
+              53, 53, 50, 54, 55, 49, 34, 44, 34, 99, 114, 101, 97, 116, 101,
+              100, 65, 116, 34, 58, 34, 50, 48, 50, 54, 45, 48, 54, 45, 51, 48,
+              84, 49, 56, 58, 49, 51, 58, 50, 48, 46, 51, 48, 49, 90, 34, 44,
+              34, 117, 112, 100, 97, 116, 101, 100, 65, 116, 34, 58, 34, 50, 48,
+              50, 54, 45, 48, 54, 45, 51, 48, 84, 49, 56, 58, 49, 51, 58, 50,
+              48, 46, 51, 48, 49, 90, 34, 125, 44, 34, 116, 111, 107, 101, 110,
+              34, 58, 34, 101, 121, 74, 104, 98, 71, 99, 105, 79, 105, 74, 73,
+              85, 122, 73, 49, 78, 105, 73, 115, 73, 110, 82, 53, 99, 67, 73,
+              54, 73, 107, 112, 88, 86, 67, 74, 57, 46, 101, 121, 74, 49, 99,
+              50, 86, 121, 83, 87, 81, 105, 79, 105, 73, 50, 89, 84, 81, 48, 77,
+              68, 99, 48, 77, 71, 82, 105, 89, 122, 90, 108, 89, 109, 77, 120,
+              78, 122, 73, 49, 90, 109, 77, 52, 78, 106, 85, 105, 76, 67, 74,
+              112, 89, 88, 81, 105, 79, 106, 69, 51, 79, 68, 73, 52, 78, 68, 77,
+              121, 77, 68, 65, 115, 73, 109, 86, 52, 99, 67, 73, 54, 77, 84, 99,
+              53, 77, 68, 89, 120, 79, 84, 73, 119, 77, 72, 48, 46, 83, 99, 116,
+              49, 122, 102, 115, 50, 87, 77, 110, 97, 99, 82, 109, 100, 87, 86,
+              112, 100, 112, 103, 111, 82, 89, 76, 98, 119, 51, 69, 121, 104,
+              78, 49, 51, 73, 73, 95, 101, 95, 109, 76, 107, 34, 125, 125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 497,
+          "responseSize": 660
+        },
+        "id": "0104418d-c474-4445-aa25-6f475b0c0869",
+        "assertions": [
+          {
+            "assertion": "Admin user created successfully",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "a6d69881-4c25-4424-a7e5-c448b23548b9",
+          "length": 12,
+          "cycles": 1,
+          "position": 1,
+          "iteration": 0,
+          "httpRequestId": "3b3dd56f-cc86-4460-9cba-bf73f432863a"
+        },
+        "item": {
+          "id": "2f6a3076-fb7c-4716-9438-b47d8a651ced",
+          "name": "2. Admin Login",
+          "request": {
+            "url": {
+              "path": ["auth", "login"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"Admin123456\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "1f8020aa-3af9-468b-a251-9119ad7d0474",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Admin login successful', function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains token', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('token');",
+                  "    pm.environment.set('token', response.token);",
+                  "    console.log('Admin token updated:', response.token);",
+                  "});",
+                  "",
+                  "pm.test('Response contains user data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.expect(response.data).to.have.property('user');",
+                  "    pm.expect(response.data.user.role).to.eql('admin');",
+                  "});"
+                ],
+                "_lastExecutionId": "f0eb9d73-2a7f-4844-ace1-ba3380be599a"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "auth", "login"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDAsImV4cCI6MTc5MDYxOTIwMH0.Sct1zfs2WMnacRmdWVpdpgoRYLbw3EyhN13II_e_mLk",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "0b62a060-ce92-42ee-bb5c-ca561b124825",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "64",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"email\": \"admin@hospital.com\",\n  \"password\": \"Admin123456\"\n}"
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDAsImV4cCI6MTc5MDYxOTIwMH0.Sct1zfs2WMnacRmdWVpdpgoRYLbw3EyhN13II_e_mLk",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "d6e9e1dd-39e3-462c-a422-ceb3d4eb8908",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9998"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:21 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "608"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"260-r9fo/YBj1LWNzVYNYrtKZDKJh50\""
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123, 34, 115, 116, 97, 116, 117, 115, 34, 58, 34, 115, 117, 99,
+              99, 101, 115, 115, 34, 44, 34, 109, 101, 115, 115, 97, 103, 101,
+              34, 58, 34, 76, 111, 103, 105, 110, 32, 115, 117, 99, 99, 101,
+              115, 115, 102, 117, 108, 34, 44, 34, 116, 111, 107, 101, 110, 34,
+              58, 34, 101, 121, 74, 104, 98, 71, 99, 105, 79, 105, 74, 73, 85,
+              122, 73, 49, 78, 105, 73, 115, 73, 110, 82, 53, 99, 67, 73, 54,
+              73, 107, 112, 88, 86, 67, 74, 57, 46, 101, 121, 74, 49, 99, 50,
+              86, 121, 83, 87, 81, 105, 79, 105, 73, 50, 89, 84, 81, 48, 77, 68,
+              99, 48, 77, 71, 82, 105, 89, 122, 90, 108, 89, 109, 77, 120, 78,
+              122, 73, 49, 90, 109, 77, 52, 78, 106, 85, 105, 76, 67, 74, 112,
+              89, 88, 81, 105, 79, 106, 69, 51, 79, 68, 73, 52, 78, 68, 77, 121,
+              77, 68, 73, 115, 73, 109, 86, 52, 99, 67, 73, 54, 77, 84, 99, 53,
+              77, 68, 89, 120, 79, 84, 73, 119, 77, 110, 48, 46, 100, 52, 81,
+              112, 80, 109, 114, 45, 121, 110, 112, 55, 48, 54, 49, 72, 68, 68,
+              85, 80, 86, 119, 54, 71, 69, 104, 103, 65, 97, 121, 104, 104, 103,
+              107, 113, 53, 55, 57, 56, 102, 114, 101, 69, 34, 44, 34, 100, 97,
+              116, 97, 34, 58, 123, 34, 117, 115, 101, 114, 34, 58, 123, 34, 95,
+              105, 100, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52, 48, 100, 98, 99,
+              54, 101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 54, 53, 34, 44, 34,
+              102, 117, 108, 108, 78, 97, 109, 101, 34, 58, 34, 72, 111, 115,
+              112, 105, 116, 97, 108, 32, 65, 100, 109, 105, 110, 34, 44, 34,
+              101, 109, 97, 105, 108, 34, 58, 34, 97, 100, 109, 105, 110, 64,
+              104, 111, 115, 112, 105, 116, 97, 108, 46, 99, 111, 109, 34, 44,
+              34, 114, 111, 108, 101, 34, 58, 34, 97, 100, 109, 105, 110, 34,
+              44, 34, 112, 104, 111, 110, 101, 34, 58, 34, 43, 49, 52, 49, 53,
+              53, 53, 53, 50, 54, 55, 49, 34, 44, 34, 108, 97, 115, 116, 76,
+              111, 103, 105, 110, 34, 58, 34, 50, 48, 50, 54, 45, 48, 54, 45,
+              51, 48, 84, 49, 56, 58, 49, 51, 58, 50, 50, 46, 50, 48, 56, 90,
+              34, 125, 44, 34, 116, 111, 107, 101, 110, 34, 58, 34, 101, 121,
+              74, 104, 98, 71, 99, 105, 79, 105, 74, 73, 85, 122, 73, 49, 78,
+              105, 73, 115, 73, 110, 82, 53, 99, 67, 73, 54, 73, 107, 112, 88,
+              86, 67, 74, 57, 46, 101, 121, 74, 49, 99, 50, 86, 121, 83, 87, 81,
+              105, 79, 105, 73, 50, 89, 84, 81, 48, 77, 68, 99, 48, 77, 71, 82,
+              105, 89, 122, 90, 108, 89, 109, 77, 120, 78, 122, 73, 49, 90, 109,
+              77, 52, 78, 106, 85, 105, 76, 67, 74, 112, 89, 88, 81, 105, 79,
+              106, 69, 51, 79, 68, 73, 52, 78, 68, 77, 121, 77, 68, 73, 115, 73,
+              109, 86, 52, 99, 67, 73, 54, 77, 84, 99, 53, 77, 68, 89, 120, 79,
+              84, 73, 119, 77, 110, 48, 46, 100, 52, 81, 112, 80, 109, 114, 45,
+              121, 110, 112, 55, 48, 54, 49, 72, 68, 68, 85, 80, 86, 119, 54,
+              71, 69, 104, 103, 65, 97, 121, 104, 104, 103, 107, 113, 53, 55,
+              57, 56, 102, 114, 101, 69, 34, 125, 125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 502,
+          "responseSize": 608
+        },
+        "id": "2f6a3076-fb7c-4716-9438-b47d8a651ced",
+        "assertions": [
+          {
+            "assertion": "Admin login successful",
+            "skipped": false
+          },
+          {
+            "assertion": "Response contains token",
+            "skipped": false
+          },
+          {
+            "assertion": "Response contains user data",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "6d60c854-3fb7-4b1a-a6a1-309d8213bdfc",
+          "length": 12,
+          "cycles": 1,
+          "position": 2,
+          "iteration": 0,
+          "httpRequestId": "435b45a1-a7fd-44ab-9af0-3918815012d0"
+        },
+        "item": {
+          "id": "c507343c-30ad-4db2-b335-4c56852f8ef4",
+          "name": "1. Create Test Clinic",
+          "request": {
+            "url": {
+              "path": ["clinics"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Cardiology Center\",\n  \"clinicNumber\": \"CL-TEST-001\",\n  \"description\": \"Test clinic for automated testing\",\n  \"address\": {\n    \"street\": \"123 Test Ave\",\n    \"city\": \"Test City\",\n    \"state\": \"TC\",\n    \"zipCode\": \"12345\",\n    \"country\": \"USA\"\n  },\n  \"phone\": \"+1234567890\",\n  \"email\": \"test@clinic.com\",\n  \"services\": [\"Consultation\", \"ECG\"]\n}"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "type": "string",
+                  "value": "{{token}}",
+                  "key": "token"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "9af2d85c-559b-41f8-a397-e3d3be944d9b",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Clinic created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains clinic data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.environment.set('testClinicId', response.data._id);",
+                  "    console.log('Test clinic ID saved:', response.data._id);",
+                  "});"
+                ],
+                "_lastExecutionId": "8852ca86-78ad-4bc3-b671-be4c2704a813"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "clinics"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "995244c0-82a2-4eb2-ac63-46ee50c1be09",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "359",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"name\": \"Test Cardiology Center\",\n  \"clinicNumber\": \"CL-TEST-001\",\n  \"description\": \"Test clinic for automated testing\",\n  \"address\": {\n    \"street\": \"123 Test Ave\",\n    \"city\": \"Test City\",\n    \"state\": \"TC\",\n    \"zipCode\": \"12345\",\n    \"country\": \"USA\"\n  },\n  \"phone\": \"+1234567890\",\n  \"email\": \"test@clinic.com\",\n  \"services\": [\"Consultation\", \"ECG\"]\n}"
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "95a9e2f0-ab64-44a6-9682-9d957e5e11fd",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9997"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:23 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "253"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"fd-7+r+Cl8fWgg26es5eR51WlBo5lM\""
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123, 34, 100, 97, 116, 97, 34, 58, 123, 34, 110, 97, 109, 101, 34,
+              58, 34, 84, 101, 115, 116, 32, 67, 97, 114, 100, 105, 111, 108,
+              111, 103, 121, 32, 67, 101, 110, 116, 101, 114, 34, 44, 34, 99,
+              108, 105, 110, 105, 99, 78, 117, 109, 98, 101, 114, 34, 58, 34,
+              67, 76, 45, 84, 69, 83, 84, 45, 48, 48, 49, 34, 44, 34, 100, 101,
+              115, 99, 114, 105, 112, 116, 105, 111, 110, 34, 58, 34, 84, 101,
+              115, 116, 32, 99, 108, 105, 110, 105, 99, 32, 102, 111, 114, 32,
+              97, 117, 116, 111, 109, 97, 116, 101, 100, 32, 116, 101, 115, 116,
+              105, 110, 103, 34, 44, 34, 100, 111, 99, 116, 111, 114, 115, 34,
+              58, 91, 93, 44, 34, 95, 105, 100, 34, 58, 34, 54, 97, 52, 52, 48,
+              55, 52, 51, 100, 98, 99, 54, 101, 98, 99, 49, 55, 50, 53, 102, 99,
+              56, 54, 99, 34, 44, 34, 99, 114, 101, 97, 116, 101, 100, 65, 116,
+              34, 58, 34, 50, 48, 50, 54, 45, 48, 54, 45, 51, 48, 84, 49, 56,
+              58, 49, 51, 58, 50, 51, 46, 54, 51, 52, 90, 34, 44, 34, 117, 112,
+              100, 97, 116, 101, 100, 65, 116, 34, 58, 34, 50, 48, 50, 54, 45,
+              48, 54, 45, 51, 48, 84, 49, 56, 58, 49, 51, 58, 50, 51, 46, 54,
+              51, 52, 90, 34, 44, 34, 95, 95, 118, 34, 58, 48, 125, 125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 228,
+          "responseSize": 253
+        },
+        "id": "c507343c-30ad-4db2-b335-4c56852f8ef4",
+        "assertions": [
+          {
+            "assertion": "Clinic created successfully",
+            "skipped": false
+          },
+          {
+            "assertion": "Response contains clinic data",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "9c19d858-cc98-4135-a0c3-df07f449a8a9",
+          "length": 12,
+          "cycles": 1,
+          "position": 3,
+          "iteration": 0,
+          "httpRequestId": "c4fdaf00-b45d-4e7c-bea1-a055622533f6"
+        },
+        "item": {
+          "id": "36ad80b8-a559-4def-812b-024fe777a24a",
+          "name": "2. Get All Clinics",
+          "request": {
+            "url": {
+              "path": ["clinics"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "method": "GET"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "c3243653-1a19-44ef-9959-d534439d95b2",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Get all clinics successful', function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains clinics array', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.expect(response.data).to.be.an('array');",
+                  "});"
+                ],
+                "_lastExecutionId": "5a214ef3-9754-4326-9ccd-1e07acbfb0d3"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "clinics"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "78a9fa0b-5997-4293-b2d7-ff356afb4e67",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "GET",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "8e18f151-6013-4e66-8710-063959d5f387",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9996"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:24 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "325"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"145-OY84WgL0eVcoIIwQSIrOleY5sUw\""
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123, 34, 114, 101, 115, 117, 108, 116, 115, 34, 58, 49, 44, 34,
+              112, 97, 103, 105, 110, 97, 116, 105, 111, 110, 82, 101, 115, 117,
+              108, 116, 34, 58, 123, 34, 99, 117, 114, 114, 101, 110, 116, 80,
+              97, 103, 101, 34, 58, 49, 44, 34, 108, 105, 109, 105, 116, 34, 58,
+              53, 48, 44, 34, 110, 117, 109, 98, 101, 114, 79, 102, 80, 97, 103,
+              101, 115, 34, 58, 49, 125, 44, 34, 100, 97, 116, 97, 34, 58, 91,
+              123, 34, 95, 105, 100, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52, 51,
+              100, 98, 99, 54, 101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 54, 99,
+              34, 44, 34, 110, 97, 109, 101, 34, 58, 34, 84, 101, 115, 116, 32,
+              67, 97, 114, 100, 105, 111, 108, 111, 103, 121, 32, 67, 101, 110,
+              116, 101, 114, 34, 44, 34, 99, 108, 105, 110, 105, 99, 78, 117,
+              109, 98, 101, 114, 34, 58, 34, 67, 76, 45, 84, 69, 83, 84, 45, 48,
+              48, 49, 34, 44, 34, 100, 101, 115, 99, 114, 105, 112, 116, 105,
+              111, 110, 34, 58, 34, 84, 101, 115, 116, 32, 99, 108, 105, 110,
+              105, 99, 32, 102, 111, 114, 32, 97, 117, 116, 111, 109, 97, 116,
+              101, 100, 32, 116, 101, 115, 116, 105, 110, 103, 34, 44, 34, 100,
+              111, 99, 116, 111, 114, 115, 34, 58, 91, 93, 44, 34, 99, 114, 101,
+              97, 116, 101, 100, 65, 116, 34, 58, 34, 50, 48, 50, 54, 45, 48,
+              54, 45, 51, 48, 84, 49, 56, 58, 49, 51, 58, 50, 51, 46, 54, 51,
+              52, 90, 34, 44, 34, 117, 112, 100, 97, 116, 101, 100, 65, 116, 34,
+              58, 34, 50, 48, 50, 54, 45, 48, 54, 45, 51, 48, 84, 49, 56, 58,
+              49, 51, 58, 50, 51, 46, 54, 51, 52, 90, 34, 125, 93, 125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 115,
+          "responseSize": 325
+        },
+        "id": "36ad80b8-a559-4def-812b-024fe777a24a",
+        "assertions": [
+          {
+            "assertion": "Get all clinics successful",
+            "skipped": false
+          },
+          {
+            "assertion": "Response contains clinics array",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "4ccaec05-a38b-408e-8901-363eaba39217",
+          "length": 12,
+          "cycles": 1,
+          "position": 4,
+          "iteration": 0,
+          "httpRequestId": "4ba0659e-09a5-45c8-9d85-9d32fbb4745d"
+        },
+        "item": {
+          "id": "a8df66a5-2c35-4b7d-9d93-094c1cab31ad",
+          "name": "1. Create Test Doctor",
+          "request": {
+            "url": {
+              "path": ["doctors"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. Test Johnson\",\n  \"email\": \"test.doctor@hospital.com\",\n  \"password\": \"Doctor123456\",\n  \"phone\": \"+201001234567\",\n  \"specialization\": \"Cardiology\",\n  \"licenseNumber\": \"TEST12345\",\n  \"experience\": 5,\n  \"qualifications\": [\"MBBS\", \"MD\"],\n  \"clinics\": [\"{{testClinicId}}\"]\n}"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "type": "string",
+                  "value": "{{token}}",
+                  "key": "token"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7e20283e-2d4e-400e-88c8-ae7c8588d21e",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Doctor created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains doctor data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.environment.set('testDoctorId', response.data._id);",
+                  "    console.log('Test doctor ID saved:', response.data._id);",
+                  "});"
+                ],
+                "_lastExecutionId": "0f8e3d31-5a0d-47df-9f20-e49045e89bd2"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "doctors"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "dfa72c84-3fe2-4ce8-be44-2829669d8937",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "297",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"fullName\": \"Dr. Test Johnson\",\n  \"email\": \"test.doctor@hospital.com\",\n  \"password\": \"Doctor123456\",\n  \"phone\": \"+201001234567\",\n  \"specialization\": \"Cardiology\",\n  \"licenseNumber\": \"TEST12345\",\n  \"experience\": 5,\n  \"qualifications\": [\"MBBS\", \"MD\"],\n  \"clinics\": [\"6a440743dbc6ebc1725fc86c\"]\n}"
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "2b2780e3-c395-4c44-8d51-f475e91fdc2a",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9995"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:25 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "333"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"14d-8lsWvyMlOJyMs+zg5jExi+it+Ok\""
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123, 34, 115, 116, 97, 116, 117, 115, 34, 58, 34, 115, 117, 99,
+              99, 101, 115, 115, 34, 44, 34, 100, 97, 116, 97, 34, 58, 123, 34,
+              117, 115, 101, 114, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52, 54,
+              100, 98, 99, 54, 101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 55, 49,
+              34, 44, 34, 102, 117, 108, 108, 78, 97, 109, 101, 34, 58, 34, 68,
+              114, 46, 32, 84, 101, 115, 116, 32, 74, 111, 104, 110, 115, 111,
+              110, 34, 44, 34, 115, 108, 117, 103, 34, 58, 34, 100, 114, 46, 45,
+              116, 101, 115, 116, 45, 106, 111, 104, 110, 115, 111, 110, 34, 44,
+              34, 115, 112, 101, 99, 105, 97, 108, 105, 122, 97, 116, 105, 111,
+              110, 34, 58, 34, 67, 97, 114, 100, 105, 111, 108, 111, 103, 121,
+              34, 44, 34, 113, 117, 97, 108, 105, 102, 105, 99, 97, 116, 105,
+              111, 110, 115, 34, 58, 91, 34, 77, 66, 66, 83, 34, 44, 34, 77, 68,
+              34, 93, 44, 34, 97, 118, 97, 105, 108, 97, 98, 105, 108, 105, 116,
+              121, 34, 58, 91, 93, 44, 34, 105, 115, 65, 99, 116, 105, 118, 101,
+              34, 58, 116, 114, 117, 101, 44, 34, 95, 105, 100, 34, 58, 34, 54,
+              97, 52, 52, 48, 55, 52, 54, 100, 98, 99, 54, 101, 98, 99, 49, 55,
+              50, 53, 102, 99, 56, 55, 51, 34, 44, 34, 99, 114, 101, 97, 116,
+              101, 100, 65, 116, 34, 58, 34, 50, 48, 50, 54, 45, 48, 54, 45, 51,
+              48, 84, 49, 56, 58, 49, 51, 58, 50, 54, 46, 51, 55, 49, 90, 34,
+              44, 34, 117, 112, 100, 97, 116, 101, 100, 65, 116, 34, 58, 34, 50,
+              48, 50, 54, 45, 48, 54, 45, 51, 48, 84, 49, 56, 58, 49, 51, 58,
+              50, 54, 46, 51, 55, 49, 90, 34, 44, 34, 95, 95, 118, 34, 58, 48,
+              125, 125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 444,
+          "responseSize": 333
+        },
+        "id": "a8df66a5-2c35-4b7d-9d93-094c1cab31ad",
+        "assertions": [
+          {
+            "assertion": "Doctor created successfully",
+            "skipped": false
+          },
+          {
+            "assertion": "Response contains doctor data",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "2ff607a5-b3d4-4f50-ba95-6407b58737e9",
+          "length": 12,
+          "cycles": 1,
+          "position": 5,
+          "iteration": 0,
+          "httpRequestId": "7a080817-01ab-4754-8e2e-84ee03654cf9"
+        },
+        "item": {
+          "id": "914a80f1-b4f4-4f2a-8682-8a1d6efbbb1f",
+          "name": "1. Create Test Patient",
+          "request": {
+            "url": {
+              "path": ["patients"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Patient Smith\",\n  \"email\": \"test.patient@example.com\",\n  \"phone\": \"+1234567890\",\n  \"dateOfBirth\": \"1990-01-01\",\n  \"gender\": \"male\",\n  \"address\": {\n    \"street\": \"123 Test St\",\n    \"city\": \"Test City\",\n    \"state\": \"TC\",\n    \"zipCode\": \"12345\",\n    \"country\": \"USA\"\n  }\n}"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "type": "string",
+                  "value": "{{token}}",
+                  "key": "token"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "99beead0-e41d-4be4-8fb3-d43c6b4ffaf3",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Patient created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains patient data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.environment.set('testPatientId', response.data._id);",
+                  "    console.log('Test patient ID saved:', response.data._id);",
+                  "});"
+                ],
+                "_lastExecutionId": "918b8170-bfda-4445-98d0-c0a8ba333674"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "patients"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "f86df856-1f9c-4017-af1a-c48114fcb822",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "288",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"name\": \"Test Patient Smith\",\n  \"email\": \"test.patient@example.com\",\n  \"phone\": \"+1234567890\",\n  \"dateOfBirth\": \"1990-01-01\",\n  \"gender\": \"male\",\n  \"address\": {\n    \"street\": \"123 Test St\",\n    \"city\": \"Test City\",\n    \"state\": \"TC\",\n    \"zipCode\": \"12345\",\n    \"country\": \"USA\"\n  }\n}"
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "16d93f4d-b022-41be-99b1-62e9241ea1ec",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9994"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:27 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "440"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"1b8-Tw60odAWaah8U8XUiJnTkP0pPHI\""
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123, 34, 115, 116, 97, 116, 117, 115, 34, 58, 34, 115, 117, 99,
+              99, 101, 115, 115, 34, 44, 34, 100, 97, 116, 97, 34, 58, 123, 34,
+              117, 115, 101, 114, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52, 48,
+              100, 98, 99, 54, 101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 54, 53,
+              34, 44, 34, 102, 117, 108, 108, 78, 97, 109, 101, 34, 58, 34, 72,
+              111, 115, 112, 105, 116, 97, 108, 32, 65, 100, 109, 105, 110, 34,
+              44, 34, 103, 101, 110, 100, 101, 114, 34, 58, 34, 109, 97, 108,
+              101, 34, 44, 34, 100, 97, 116, 101, 79, 102, 66, 105, 114, 116,
+              104, 34, 58, 34, 49, 57, 57, 48, 45, 48, 49, 45, 48, 49, 84, 48,
+              48, 58, 48, 48, 58, 48, 48, 46, 48, 48, 48, 90, 34, 44, 34, 98,
+              108, 111, 111, 100, 84, 121, 112, 101, 34, 58, 34, 85, 110, 107,
+              110, 111, 119, 110, 34, 44, 34, 97, 108, 108, 101, 114, 103, 105,
+              101, 115, 34, 58, 91, 93, 44, 34, 99, 104, 114, 111, 110, 105, 99,
+              68, 105, 115, 101, 97, 115, 101, 115, 34, 58, 91, 93, 44, 34, 115,
+              117, 114, 103, 105, 99, 97, 108, 72, 105, 115, 116, 111, 114, 121,
+              34, 58, 91, 93, 44, 34, 109, 101, 100, 105, 99, 97, 108, 82, 101,
+              99, 111, 114, 100, 78, 117, 109, 98, 101, 114, 34, 58, 34, 77, 82,
+              78, 50, 48, 55, 54, 53, 52, 51, 56, 54, 34, 44, 34, 105, 115, 65,
+              99, 116, 105, 118, 101, 34, 58, 116, 114, 117, 101, 44, 34, 95,
+              105, 100, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52, 55, 100, 98, 99,
+              54, 101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 55, 54, 34, 44, 34,
+              99, 114, 101, 97, 116, 101, 100, 65, 116, 34, 58, 34, 50, 48, 50,
+              54, 45, 48, 54, 45, 51, 48, 84, 49, 56, 58, 49, 51, 58, 50, 55,
+              46, 54, 53, 53, 90, 34, 44, 34, 117, 112, 100, 97, 116, 101, 100,
+              65, 116, 34, 58, 34, 50, 48, 50, 54, 45, 48, 54, 45, 51, 48, 84,
+              49, 56, 58, 49, 51, 58, 50, 55, 46, 54, 53, 53, 90, 34, 44, 34,
+              95, 95, 118, 34, 58, 48, 44, 34, 97, 103, 101, 34, 58, 51, 54, 44,
+              34, 105, 100, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52, 55, 100, 98,
+              99, 54, 101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 55, 54, 34, 125,
+              125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 293,
+          "responseSize": 440
+        },
+        "id": "914a80f1-b4f4-4f2a-8682-8a1d6efbbb1f",
+        "assertions": [
+          {
+            "assertion": "Patient created successfully",
+            "skipped": false
+          },
+          {
+            "assertion": "Response contains patient data",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "17698002-361d-4e21-a1ad-8c22cba42055",
+          "length": 12,
+          "cycles": 1,
+          "position": 6,
+          "iteration": 0,
+          "httpRequestId": "7b251064-857a-4623-9c99-550007196cde"
+        },
+        "item": {
+          "id": "2d246b4a-d334-49aa-931c-f9672c3822c5",
+          "name": "1. Create Test Appointment",
+          "request": {
+            "url": {
+              "path": ["appointments"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor\": \"{{testDoctorId}}\",\n  \"clinic\": \"{{testClinicId}}\",\n  \"type\": \"consultation\",\n  \"date\": \"{{testAppointmentDate}}\",\n  \"time\": \"10:00\",\n  \"MaxNumberOfPatients\": 1,\n  \"duration\": 30,\n  \"notes\": \"Test appointment for automated testing\",\n  \"status\": \"Scheduled\"\n}"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "type": "string",
+                  "value": "{{token}}",
+                  "key": "token"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "b97c6086-299b-4792-b587-8ce3e6cb271c",
+                "type": "text/javascript",
+                "exec": [
+                  "const tomorrow = new Date();",
+                  "tomorrow.setDate(tomorrow.getDate() + 1);",
+                  "const dateString = tomorrow.toISOString().split('T')[0];",
+                  "pm.environment.set('testAppointmentDate', dateString);"
+                ],
+                "_lastExecutionId": "1b032cf5-ab7a-4c88-9285-80584db435c2"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "8880d767-9714-4a94-a9a3-0f8ea51cf70c",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Appointment created successfully', function () {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains appointment data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "    pm.environment.set('testAppointmentId', response.data._id);",
+                  "    console.log('Test appointment ID saved:', response.data._id);",
+                  "});"
+                ],
+                "_lastExecutionId": "74c633b4-2231-4a2d-b7cb-1cf098c3ce0f"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "appointments"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "ee308762-7105-4e46-99a8-6738a73b96d5",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "275",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"doctor\": \"6a440746dbc6ebc1725fc873\",\n  \"clinic\": \"6a440743dbc6ebc1725fc86c\",\n  \"type\": \"consultation\",\n  \"date\": \"2026-07-01\",\n  \"time\": \"10:00\",\n  \"MaxNumberOfPatients\": 1,\n  \"duration\": 30,\n  \"notes\": \"Test appointment for automated testing\",\n  \"status\": \"Scheduled\"\n}"
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "a8055d71-faa3-42d5-baa6-e4185fff885f",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9993"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:28 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "483"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"1e3-VRw1q3oPOxv33r1KkL/yKzHn8r4\""
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123, 34, 115, 116, 97, 116, 117, 115, 34, 58, 34, 115, 117, 99,
+              99, 101, 115, 115, 34, 44, 34, 100, 97, 116, 97, 34, 58, 123, 34,
+              116, 121, 112, 101, 34, 58, 34, 99, 111, 110, 115, 117, 108, 116,
+              97, 116, 105, 111, 110, 34, 44, 34, 100, 117, 114, 97, 116, 105,
+              111, 110, 34, 58, 51, 48, 44, 34, 112, 114, 105, 111, 114, 105,
+              116, 121, 34, 58, 34, 110, 111, 114, 109, 97, 108, 34, 44, 34,
+              115, 116, 97, 116, 117, 115, 34, 58, 34, 83, 99, 104, 101, 100,
+              117, 108, 101, 100, 34, 44, 34, 100, 111, 99, 116, 111, 114, 34,
+              58, 34, 54, 97, 52, 52, 48, 55, 52, 54, 100, 98, 99, 54, 101, 98,
+              99, 49, 55, 50, 53, 102, 99, 56, 55, 51, 34, 44, 34, 99, 108, 105,
+              110, 105, 99, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52, 51, 100, 98,
+              99, 54, 101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 54, 99, 34, 44,
+              34, 100, 97, 116, 101, 34, 58, 34, 50, 48, 50, 54, 45, 48, 55, 45,
+              48, 49, 84, 48, 48, 58, 48, 48, 58, 48, 48, 46, 48, 48, 48, 90,
+              34, 44, 34, 116, 105, 109, 101, 34, 58, 34, 49, 48, 58, 48, 48,
+              34, 44, 34, 110, 111, 116, 101, 115, 34, 58, 34, 84, 101, 115,
+              116, 32, 97, 112, 112, 111, 105, 110, 116, 109, 101, 110, 116, 32,
+              102, 111, 114, 32, 97, 117, 116, 111, 109, 97, 116, 101, 100, 32,
+              116, 101, 115, 116, 105, 110, 103, 34, 44, 34, 105, 115, 80, 97,
+              105, 100, 34, 58, 102, 97, 108, 115, 101, 44, 34, 78, 117, 109,
+              98, 101, 114, 79, 102, 80, 97, 116, 105, 101, 110, 116, 115, 34,
+              58, 48, 44, 34, 77, 97, 120, 78, 117, 109, 98, 101, 114, 79, 102,
+              80, 97, 116, 105, 101, 110, 116, 115, 34, 58, 49, 44, 34, 73, 115,
+              70, 117, 108, 108, 34, 58, 102, 97, 108, 115, 101, 44, 34, 95,
+              105, 100, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52, 57, 100, 98, 99,
+              54, 101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 55, 99, 34, 44, 34,
+              112, 97, 116, 105, 101, 110, 116, 34, 58, 91, 93, 44, 34, 99, 114,
+              101, 97, 116, 101, 100, 65, 116, 34, 58, 34, 50, 48, 50, 54, 45,
+              48, 54, 45, 51, 48, 84, 49, 56, 58, 49, 51, 58, 50, 57, 46, 51,
+              49, 50, 90, 34, 44, 34, 117, 112, 100, 97, 116, 101, 100, 65, 116,
+              34, 58, 34, 50, 48, 50, 54, 45, 48, 54, 45, 51, 48, 84, 49, 56,
+              58, 49, 51, 58, 50, 57, 46, 51, 49, 50, 90, 34, 44, 34, 95, 95,
+              118, 34, 58, 48, 125, 125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 409,
+          "responseSize": 483
+        },
+        "id": "2d246b4a-d334-49aa-931c-f9672c3822c5",
+        "assertions": [
+          {
+            "assertion": "Appointment created successfully",
+            "skipped": false
+          },
+          {
+            "assertion": "Response contains appointment data",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "6db1b25a-b386-4c09-89cf-8fe7d257ecc0",
+          "length": 12,
+          "cycles": 1,
+          "position": 7,
+          "iteration": 0,
+          "httpRequestId": "e3c1077c-47bd-44b2-82f7-f3962862e889"
+        },
+        "item": {
+          "id": "19e166d3-8bfd-4a49-9813-93e270879862",
+          "name": "2. Register Patient for Appointment",
+          "request": {
+            "url": {
+              "path": ["appointments", "{{testAppointmentId}}", "register"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": \"{{testPatientId}}\",\n  \"reason\": \"Test consultation\",\n  \"symptoms\": \"Test symptoms for automated testing\",\n  \"notes\": \"Test registration\"\n}"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "ac0de4e4-d0b1-4087-b0ee-f8ce437995a7",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Patient registration successful', function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains registration data', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('data');",
+                  "});"
+                ],
+                "_lastExecutionId": "c928c98f-369c-4ad2-8110-97a4904aa829"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": [
+              "api",
+              "v1",
+              "appointments",
+              "6a440749dbc6ebc1725fc87c",
+              "register"
+            ],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "a701bc6c-b95e-44f6-8a08-d822b07c4048",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            },
+            {
+              "key": "Content-Length",
+              "value": "163",
+              "system": true
+            }
+          ],
+          "method": "POST",
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"patientId\": \"6a440747dbc6ebc1725fc876\",\n  \"reason\": \"Test consultation\",\n  \"symptoms\": \"Test symptoms for automated testing\",\n  \"notes\": \"Test registration\"\n}"
+          },
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "fcac8ddf-7017-4754-8e77-3e53699ce4fb",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9992"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:30 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Content-Length",
+              "value": "928"
+            },
+            {
+              "key": "ETag",
+              "value": "W/\"3a0-YcrfDGxvA00YpATmSNKsHrranCQ\""
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": [
+              123, 34, 115, 116, 97, 116, 117, 115, 34, 58, 34, 115, 117, 99,
+              99, 101, 115, 115, 34, 44, 34, 109, 101, 115, 115, 97, 103, 101,
+              34, 58, 34, 82, 101, 103, 105, 115, 116, 114, 97, 116, 105, 111,
+              110, 32, 115, 117, 98, 109, 105, 116, 116, 101, 100, 32, 115, 117,
+              99, 99, 101, 115, 115, 102, 117, 108, 108, 121, 46, 32, 65, 119,
+              97, 105, 116, 105, 110, 103, 32, 97, 100, 109, 105, 110, 32, 97,
+              112, 112, 114, 111, 118, 97, 108, 46, 34, 44, 34, 100, 97, 116,
+              97, 34, 58, 123, 34, 95, 105, 100, 34, 58, 34, 54, 97, 52, 52, 48,
+              55, 52, 57, 100, 98, 99, 54, 101, 98, 99, 49, 55, 50, 53, 102, 99,
+              56, 55, 99, 34, 44, 34, 116, 121, 112, 101, 34, 58, 34, 99, 111,
+              110, 115, 117, 108, 116, 97, 116, 105, 111, 110, 34, 44, 34, 100,
+              117, 114, 97, 116, 105, 111, 110, 34, 58, 51, 48, 44, 34, 112,
+              114, 105, 111, 114, 105, 116, 121, 34, 58, 34, 110, 111, 114, 109,
+              97, 108, 34, 44, 34, 115, 116, 97, 116, 117, 115, 34, 58, 34, 83,
+              99, 104, 101, 100, 117, 108, 101, 100, 34, 44, 34, 100, 111, 99,
+              116, 111, 114, 34, 58, 123, 34, 95, 105, 100, 34, 58, 34, 54, 97,
+              52, 52, 48, 55, 52, 54, 100, 98, 99, 54, 101, 98, 99, 49, 55, 50,
+              53, 102, 99, 56, 55, 51, 34, 44, 34, 102, 117, 108, 108, 78, 97,
+              109, 101, 34, 58, 34, 68, 114, 46, 32, 84, 101, 115, 116, 32, 74,
+              111, 104, 110, 115, 111, 110, 34, 44, 34, 115, 112, 101, 99, 105,
+              97, 108, 105, 122, 97, 116, 105, 111, 110, 34, 58, 34, 67, 97,
+              114, 100, 105, 111, 108, 111, 103, 121, 34, 125, 44, 34, 99, 108,
+              105, 110, 105, 99, 34, 58, 123, 34, 95, 105, 100, 34, 58, 34, 54,
+              97, 52, 52, 48, 55, 52, 51, 100, 98, 99, 54, 101, 98, 99, 49, 55,
+              50, 53, 102, 99, 56, 54, 99, 34, 44, 34, 110, 97, 109, 101, 34,
+              58, 34, 84, 101, 115, 116, 32, 67, 97, 114, 100, 105, 111, 108,
+              111, 103, 121, 32, 67, 101, 110, 116, 101, 114, 34, 44, 34, 99,
+              108, 105, 110, 105, 99, 78, 117, 109, 98, 101, 114, 34, 58, 34,
+              67, 76, 45, 84, 69, 83, 84, 45, 48, 48, 49, 34, 125, 44, 34, 100,
+              97, 116, 101, 34, 58, 34, 50, 48, 50, 54, 45, 48, 55, 45, 48, 49,
+              84, 48, 48, 58, 48, 48, 58, 48, 48, 46, 48, 48, 48, 90, 34, 44,
+              34, 116, 105, 109, 101, 34, 58, 34, 49, 48, 58, 48, 48, 34, 44,
+              34, 110, 111, 116, 101, 115, 34, 58, 34, 84, 101, 115, 116, 32,
+              97, 112, 112, 111, 105, 110, 116, 109, 101, 110, 116, 32, 102,
+              111, 114, 32, 97, 117, 116, 111, 109, 97, 116, 101, 100, 32, 116,
+              101, 115, 116, 105, 110, 103, 34, 44, 34, 105, 115, 80, 97, 105,
+              100, 34, 58, 102, 97, 108, 115, 101, 44, 34, 78, 117, 109, 98,
+              101, 114, 79, 102, 80, 97, 116, 105, 101, 110, 116, 115, 34, 58,
+              48, 44, 34, 77, 97, 120, 78, 117, 109, 98, 101, 114, 79, 102, 80,
+              97, 116, 105, 101, 110, 116, 115, 34, 58, 49, 44, 34, 73, 115, 70,
+              117, 108, 108, 34, 58, 102, 97, 108, 115, 101, 44, 34, 112, 97,
+              116, 105, 101, 110, 116, 34, 58, 91, 123, 34, 112, 97, 116, 105,
+              101, 110, 116, 73, 100, 34, 58, 34, 54, 97, 52, 52, 48, 55, 52,
+              55, 100, 98, 99, 54, 101, 98, 99, 49, 55, 50, 53, 102, 99, 56, 55,
+              54, 34, 44, 34, 114, 101, 103, 105, 115, 116, 114, 97, 116, 105,
+              111, 110, 83, 116, 97, 116, 117, 115, 34, 58, 34, 112, 101, 110,
+              100, 105, 110, 103, 34, 44, 34, 114, 101, 103, 105, 115, 116, 101,
+              114, 101, 100, 65, 116, 34, 58, 34, 50, 48, 50, 54, 45, 48, 54,
+              45, 51, 48, 84, 49, 56, 58, 49, 51, 58, 51, 48, 46, 55, 57, 51,
+              90, 34, 44, 34, 115, 121, 109, 112, 116, 111, 109, 115, 34, 58,
+              34, 84, 101, 115, 116, 32, 115, 121, 109, 112, 116, 111, 109, 115,
+              32, 102, 111, 114, 32, 97, 117, 116, 111, 109, 97, 116, 101, 100,
+              32, 116, 101, 115, 116, 105, 110, 103, 34, 44, 34, 112, 114, 101,
+              115, 99, 114, 105, 112, 116, 105, 111, 110, 115, 34, 58, 91, 93,
+              44, 34, 109, 101, 100, 105, 99, 97, 108, 82, 101, 99, 111, 114,
+              100, 115, 34, 58, 91, 93, 44, 34, 95, 105, 100, 34, 58, 34, 54,
+              97, 52, 52, 48, 55, 52, 97, 100, 98, 99, 54, 101, 98, 99, 49, 55,
+              50, 53, 102, 99, 56, 56, 53, 34, 125, 93, 44, 34, 99, 114, 101,
+              97, 116, 101, 100, 65, 116, 34, 58, 34, 50, 48, 50, 54, 45, 48,
+              54, 45, 51, 48, 84, 49, 56, 58, 49, 51, 58, 50, 57, 46, 51, 49,
+              50, 90, 34, 44, 34, 117, 112, 100, 97, 116, 101, 100, 65, 116, 34,
+              58, 34, 50, 48, 50, 54, 45, 48, 54, 45, 51, 48, 84, 49, 56, 58,
+              49, 51, 58, 51, 48, 46, 55, 57, 55, 90, 34, 44, 34, 95, 95, 118,
+              34, 58, 49, 125, 125
+            ]
+          },
+          "cookie": [],
+          "responseTime": 386,
+          "responseSize": 928
+        },
+        "id": "19e166d3-8bfd-4a49-9813-93e270879862",
+        "assertions": [
+          {
+            "assertion": "Patient registration successful",
+            "skipped": false
+          },
+          {
+            "assertion": "Response contains registration data",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "070cbdac-22da-49ff-8cf1-6217e6558ba2",
+          "length": 12,
+          "cycles": 1,
+          "position": 8,
+          "iteration": 0,
+          "httpRequestId": "e177986e-b3ec-4ee9-8b11-f09218566e32"
+        },
+        "item": {
+          "id": "01adfafc-0566-471f-9f6f-14b887a0ab6c",
+          "name": "1. Delete Test Appointment",
+          "request": {
+            "url": {
+              "path": ["appointments", "{{testAppointmentId}}"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "type": "string",
+                  "value": "{{token}}",
+                  "key": "token"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2e7e8f0b-dd59-4d71-a8b2-89528948733a",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Appointment deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "_lastExecutionId": "a68cce40-95a9-4c88-92b1-5d096ff37e9a"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "appointments", "6a440749dbc6ebc1725fc87c"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "ea2b6090-34c8-4abd-bdf1-3dd74a736703",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "DELETE",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "22c5b5ae-bf89-4929-aff0-51bd304f27e1",
+          "status": "No Content",
+          "code": 204,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9991"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:31 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": []
+          },
+          "cookie": [],
+          "responseTime": 190,
+          "responseSize": 0
+        },
+        "id": "01adfafc-0566-471f-9f6f-14b887a0ab6c",
+        "assertions": [
+          {
+            "assertion": "Appointment deleted successfully",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "05fde2f4-c460-40ca-8186-dc241bc06c43",
+          "length": 12,
+          "cycles": 1,
+          "position": 9,
+          "iteration": 0,
+          "httpRequestId": "b64f9e25-5c5f-45cc-bc8d-3b38414fbe66"
+        },
+        "item": {
+          "id": "194ea28c-cdc2-4f0a-b982-9895c1d9f4bc",
+          "name": "2. Delete Test Doctor",
+          "request": {
+            "url": {
+              "path": ["doctors", "{{testDoctorId}}"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "type": "string",
+                  "value": "{{token}}",
+                  "key": "token"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "dc255042-7d1f-4aec-a6b6-31f37009d764",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Doctor deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "_lastExecutionId": "55e2eca0-815f-4dcc-b8a0-9021e385801e"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "doctors", "6a440746dbc6ebc1725fc873"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "097cb71d-1087-4844-bbb5-796266bc8902",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "DELETE",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "7b5827a5-bb50-458f-9525-2a5ae5a0f0b2",
+          "status": "No Content",
+          "code": 204,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9990"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:33 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": []
+          },
+          "cookie": [],
+          "responseTime": 122,
+          "responseSize": 0
+        },
+        "id": "194ea28c-cdc2-4f0a-b982-9895c1d9f4bc",
+        "assertions": [
+          {
+            "assertion": "Doctor deleted successfully",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "bb7bbe95-085b-4ade-bc0d-5f3658053500",
+          "length": 12,
+          "cycles": 1,
+          "position": 10,
+          "iteration": 0,
+          "httpRequestId": "9ab15bc5-565a-4bfd-9438-61cd90a4cd99"
+        },
+        "item": {
+          "id": "b89abe4d-bda0-4f91-848e-839292bfd411",
+          "name": "3. Delete Test Patient",
+          "request": {
+            "url": {
+              "path": ["patients", "{{testPatientId}}"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "type": "string",
+                  "value": "{{token}}",
+                  "key": "token"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "7e99af1a-6659-4847-800e-9217551240f1",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Patient deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "_lastExecutionId": "8fdc0f33-8b80-4a69-b188-52a61387e4be"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "patients", "6a440747dbc6ebc1725fc876"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "a6aa3877-04f1-4c21-8d69-04b9fc17263f",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "DELETE",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "d711a340-34fc-468d-81b4-5725dedf680c",
+          "status": "No Content",
+          "code": 204,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9989"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:34 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": []
+          },
+          "cookie": [],
+          "responseTime": 141,
+          "responseSize": 0
+        },
+        "id": "b89abe4d-bda0-4f91-848e-839292bfd411",
+        "assertions": [
+          {
+            "assertion": "Patient deleted successfully",
+            "skipped": false
+          }
+        ]
+      },
+      {
+        "cursor": {
+          "ref": "5d3efbb0-75b5-447a-98d0-7986f6d0d4d2",
+          "length": 12,
+          "cycles": 1,
+          "position": 11,
+          "iteration": 0,
+          "httpRequestId": "e1bff6ad-8cd2-4d0f-b767-8fa0f8b1e411"
+        },
+        "item": {
+          "id": "d40d0cb2-a059-4046-b071-e89864decdb2",
+          "name": "4. Delete Test Clinic",
+          "request": {
+            "url": {
+              "path": ["clinics", "{{testClinicId}}"],
+              "host": ["{{baseUrl}}"],
+              "query": [],
+              "variable": []
+            },
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "type": "string",
+                  "value": "{{token}}",
+                  "key": "token"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "2dfda72e-54b8-4e0c-b2e6-1cb304dbf672",
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Clinic deleted successfully', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ],
+                "_lastExecutionId": "19604399-83f7-4bb8-a13b-e24102143a63"
+              }
+            }
+          ]
+        },
+        "request": {
+          "url": {
+            "protocol": "http",
+            "port": "8000",
+            "path": ["api", "v1", "clinics", "6a440743dbc6ebc1725fc86c"],
+            "host": ["localhost"],
+            "query": [],
+            "variable": []
+          },
+          "header": [
+            {
+              "key": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+              "system": true
+            },
+            {
+              "key": "User-Agent",
+              "value": "PostmanRuntime/7.39.1",
+              "system": true
+            },
+            {
+              "key": "Accept",
+              "value": "*/*",
+              "system": true
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache",
+              "system": true
+            },
+            {
+              "key": "Postman-Token",
+              "value": "32d6411e-356c-48e4-9a1f-96f2991d5106",
+              "system": true
+            },
+            {
+              "key": "Host",
+              "value": "localhost:8000",
+              "system": true
+            },
+            {
+              "key": "Accept-Encoding",
+              "value": "gzip, deflate, br",
+              "system": true
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive",
+              "system": true
+            }
+          ],
+          "method": "DELETE",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "type": "string",
+                "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTQ0MDc0MGRiYzZlYmMxNzI1ZmM4NjUiLCJpYXQiOjE3ODI4NDMyMDIsImV4cCI6MTc5MDYxOTIwMn0.d4QpPmr-ynp7061HDDUPVw6GEhgAayhhgkq5798freE",
+                "key": "token"
+              }
+            ]
+          }
+        },
+        "response": {
+          "id": "9d2ec3df-17cd-41f5-aae6-3354a4259ed0",
+          "status": "No Content",
+          "code": 204,
+          "header": [
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Cross-Origin-Resource-Policy",
+              "value": "same-origin"
+            },
+            {
+              "key": "Origin-Agent-Cluster",
+              "value": "?1"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "no-referrer"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000; includeSubDomains"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-DNS-Prefetch-Control",
+              "value": "off"
+            },
+            {
+              "key": "X-Download-Options",
+              "value": "noopen"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "X-Permitted-Cross-Domain-Policies",
+              "value": "none"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "0"
+            },
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Access-Control-Allow-Credentials",
+              "value": "true"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "10000"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "9988"
+            },
+            {
+              "key": "Date",
+              "value": "Tue, 30 Jun 2026 18:13:35 GMT"
+            },
+            {
+              "key": "X-RateLimit-Reset",
+              "value": "1782844101"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=5"
+            }
+          ],
+          "stream": {
+            "type": "Buffer",
+            "data": []
+          },
+          "cookie": [],
+          "responseTime": 118,
+          "responseSize": 0
+        },
+        "id": "d40d0cb2-a059-4046-b071-e89864decdb2",
+        "assertions": [
+          {
+            "assertion": "Clinic deleted successfully",
+            "skipped": false
+          }
+        ]
+      }
+    ],
+    "transfers": {
+      "responseTotal": 4030
+    },
+    "failures": [],
+    "error": null
+  }
+}

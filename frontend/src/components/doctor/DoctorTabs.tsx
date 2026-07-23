@@ -49,12 +49,19 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
     setDoctorVisitsArchivedOpen,
     handleSaveNote,
     handleCancelSlot,
+    handleCancelRestOfDay,
     handleApproveRegistration,
     handleRejectRegistration,
     handleStartConsultation,
     doctorProfileId,
     setActiveTab,
   } = doctor as any;
+
+  const todayStr = new Date().toISOString().split("T")[0];
+  const hasTodaySlots = doctorAppointments?.some((s: any) => {
+    const sDateStr = new Date(s.date).toISOString().split("T")[0];
+    return sDateStr === todayStr && s.status !== "Completed" && s.status !== "Cancelled";
+  });
 
   return (
     <>
@@ -356,13 +363,26 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
 
       {activeTab === "slots" && (
         <div className="space-y-8 max-w-5xl">
-          <div>
-            <h2 className="text-2xl font-bold text-[#0F172A] tracking-tight">
-              Consultation Hours
-            </h2>
-            <p className="text-sm text-[#64748B]">
-              View your available clinic hours and slot capacities.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-[#0F172A] tracking-tight">
+                Consultation Hours
+              </h2>
+              <p className="text-sm text-[#64748B]">
+                View your available clinic hours and slot capacities.
+              </p>
+            </div>
+            {hasTodaySlots && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCancelRestOfDay}
+                className="border-red-500 text-red-500 hover:bg-red-500/5 hover:border-red-600 hover:text-red-600 rounded-xl px-3 py-1.5 text-xs font-semibold cursor-pointer flex items-center gap-1.5 self-start sm:self-center"
+              >
+                <XCircle size={14} />
+                <span>Cancel Rest of Today</span>
+              </Button>
+            )}
           </div>
 
           {actionError && (

@@ -335,3 +335,22 @@ export const cancelClinicSession = async (slotId: string): Promise<unknown> => {
   return response.data;
 };
 
+/**
+ * Cancel sessions for a doctor on a given date.
+ * - Today -> cancels only sessions whose startTime > now
+ * - Future date -> cancels all sessions on that date
+ * 
+ * @param doctorId - The Doctor profile ID
+ * @param date - ISO date string YYYY-MM-DD
+ */
+export const cancelSessionsOnDate = async (
+  doctorId: string,
+  date: string
+): Promise<{ cancelledSessions: number; cancelledAppointments: number }> => {
+  const response = await api.patch("/appointments/cancel-sessions-on-date", {
+    doctorId,
+    date,
+  });
+  return response.data?.data;
+};
+

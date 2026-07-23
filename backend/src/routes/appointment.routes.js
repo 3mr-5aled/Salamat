@@ -23,6 +23,7 @@ const {
   getAppointmentsOrScheduleController,
   cancelSessionController,
   adminBookController,
+  cancelSessionsOnDateController,
 } = require("../controllers/appointment.controller");
 
 // Validators
@@ -79,6 +80,12 @@ router.delete(
 
 // Protected routes (authentication required)
 router.use(protect);
+
+router.patch(
+  "/cancel-sessions-on-date",
+  allowedTo("doctor", "admin"),
+  cancelSessionsOnDateController
+);
 
 // Routes for patients - they can view their own appointments
 router.get("/my/appointments", allowedTo("patient"), getAllAppointments);

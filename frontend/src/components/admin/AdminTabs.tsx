@@ -9,6 +9,7 @@ import {
   Edit3,
   Link2Off,
   RotateCcw,
+  XCircle,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
@@ -72,6 +73,9 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
     setAdminPastSlotsOpen,
     loadingMessages,
     messages,
+    slotsCancelDate,
+    setSlotsCancelDate,
+    handleAdminCancelDay,
   } = admin as any;
 
   return (
@@ -492,27 +496,54 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
               )}
             </div>
 
-            <Button
-              disabled={!slotsFilterDoctorId}
-              onClick={() => {
-                const selectedDoc = doctors.find((d: any) => d._id === slotsFilterDoctorId);
-                const clinicId = selectedDoc?.clinic?._id || selectedDoc?.clinic;
-                if (!clinicId) {
-                  setActionError("Cannot create slots. Please select a doctor assigned to a clinic first.");
-                  return;
-                }
-                setEditingSlot(null);
-                setAdminSlotDate("");
-                setAdminSlotTime("08:00");
-                setAdminSlotEndTime("12:00");
-                setAdminSlotDuration(30);
-                setAdminSlotModalOpen(true);
-              }}
-              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white disabled:bg-slate-200 rounded-xl text-xs py-2 font-bold cursor-pointer"
-            >
-              <Plus size={16} className="mr-1" />
-              <span>Create Session</span>
-            </Button>
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto md:justify-end">
+              {slotsFilterDoctorId && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={slotsCancelDate}
+                    onChange={(e) => setSlotsCancelDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="h-8 text-xs border border-slate-200 rounded-xl px-2.5 text-[#0F172A] focus:outline-none focus:border-[#2563EB] bg-white cursor-pointer"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAdminCancelDay}
+                    className="h-8 border-red-500 text-red-500 hover:bg-red-500/5 hover:border-red-600 hover:text-red-600 rounded-xl px-3 text-xs font-bold cursor-pointer flex items-center gap-1.5"
+                  >
+                    <XCircle size={14} />
+                    <span>
+                      {slotsCancelDate === new Date().toISOString().split("T")[0]
+                        ? "Cancel Rest of Today"
+                        : "Cancel Full Day"}
+                    </span>
+                  </Button>
+                </div>
+              )}
+
+              <Button
+                disabled={!slotsFilterDoctorId}
+                onClick={() => {
+                  const selectedDoc = doctors.find((d: any) => d._id === slotsFilterDoctorId);
+                  const clinicId = selectedDoc?.clinic?._id || selectedDoc?.clinic;
+                  if (!clinicId) {
+                    setActionError("Cannot create slots. Please select a doctor assigned to a clinic first.");
+                    return;
+                  }
+                  setEditingSlot(null);
+                  setAdminSlotDate("");
+                  setAdminSlotTime("08:00");
+                  setAdminSlotEndTime("12:00");
+                  setAdminSlotDuration(30);
+                  setAdminSlotModalOpen(true);
+                }}
+                className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white disabled:bg-slate-200 rounded-xl text-xs py-2 font-bold cursor-pointer"
+              >
+                <Plus size={16} className="mr-1" />
+                <span>Create Session</span>
+              </Button>
+            </div>
           </div>
 
           {(() => {

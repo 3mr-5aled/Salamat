@@ -12,6 +12,7 @@ import {
   rejectPatientRegistration,
   completeConsultation,
   cancelClinicSession,
+  cancelSessionsOnDate,
 } from "../services/appointment";
 import type { PrescriptionItem } from "../types";
 
@@ -234,6 +235,40 @@ export function useDoctorDashboard() {
     }
   };
 
+  const cancelRestOfDayMutation = useMutation({
+    mutationFn: () => {
+      const today = new Date().toISOString().split("T")[0];
+      return cancelSessionsOnDate(doctorProfileId!, today);
+    },
+    onMutate: () => {
+      setActionError(null);
+      setActionSuccess(null);
+    },
+    onSuccess: (data) => {
+      setActionSuccess(
+        `Cancelled ${data.cancelledSessions} session(s) and ${data.cancelledAppointments} appointment(s) for the rest of today.`
+      );
+      queryClient.invalidateQueries({ queryKey: ["doctorAppointments"] });
+    },
+    onError: (err: any) => {
+      setActionError(getFriendlyErrorMessage(err));
+    },
+  });
+
+  const handleCancelRestOfDay = async () => {
+    if (!doctorProfileId) return;
+    const confirmed = await customConfirm({
+      title: "Cancel Rest of Today",
+      message:
+        "This will cancel all your remaining sessions for today. All pending patient bookings will be cancelled. This cannot be undone.",
+      confirmText: "Yes, Cancel Rest of Today",
+      variant: "danger",
+    });
+    if (confirmed) {
+      await cancelRestOfDayMutation.mutateAsync();
+    }
+  };
+
   const approveRegistrationMutation = useMutation({
     mutationFn: ({ slotId, patientId }: { slotId: string; patientId: string }) =>
       approvePatientRegistration(slotId, patientId),
@@ -403,6 +438,7 @@ export function useDoctorDashboard() {
     handleSaveNote,
     handleContactAdminSubmit,
     handleCancelSlot,
+    handleCancelRestOfDay,
     handleApproveRegistration,
     handleRejectRegistration,
     handleStartConsultation,

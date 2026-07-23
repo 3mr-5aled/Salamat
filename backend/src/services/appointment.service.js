@@ -323,6 +323,76 @@ class AppointmentService {
       throw new ApiError("Failed to cancel clinic session", 500);
     }
   }
+
+  /**
+   * Cancel sessions for a doctor on a given date.
+   * - If date === today: cancels only sessions whose startTime > now (remaining)
+   * - If date is in the future: cancels ALL sessions on that date
+   *
+   * @param {string} doctorId
+   * @param {string} date - ISO date string e.g. "2026-07-24"
+   * @param {string} requestedByUserId
+   * @returns {{ cancelledSessions: number, cancelledAppointments: number }}
+   */
+  async cancelSessionsOnDate(doctorId, date, requestedByUserId) {
+    try {
+      const now = new Date();
+      const target = new Date(date);
+
+      const dayStart = new Date(target);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(target);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const isToday =
+        target.toISOString().split("T")[0] === now.toISOString().split("T")[0];
+
+      const currentTimeStr = `${String(now.getHours()).padStart(2, "0")}:${String(
+        now.getMinutes()
+      ).padStart(2, "0")}`;
+
+      // Fetch all non-cancelled sessions for that doctor on that date
+      const sessions = await ClinicSession.find({
+        doctor: doctorId,
+        date: { $gte: dayStart, $lte: dayEnd },
+        status: { $ne: "Cancelled" },
+      });
+
+      // If today -> only future sessions; if future date -> all sessions
+      const targets = isToday
+        ? sessions.filter((s) => s.startTime > currentTimeStr)
+        : sessions;
+
+      if (targets.length === 0) {
+        throw new ApiError(
+          isToday
+            ? "No remaining sessions to cancel for today."
+            : "No sessions found to cancel on that date.",
+          404
+        );
+      }
+
+      const sessionIds = targets.map((s) => s._id);
+
+      const apptResult = await Appointment.updateMany(
+        { session: { $in: sessionIds }, status: { $ne: "Completed" } },
+        { status: "Cancelled" }
+      );
+
+      await ClinicSession.updateMany(
+        { _id: { $in: sessionIds } },
+        { status: "Cancelled" }
+      );
+
+      return {
+        cancelledSessions: targets.length,
+        cancelledAppointments: apptResult.modifiedCount,
+      };
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      throw new ApiError("Failed to cancel sessions", 500);
+    }
+  }
 }
 
 module.exports = new AppointmentService();

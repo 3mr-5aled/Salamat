@@ -394,7 +394,8 @@ describe("Patient Dashboard - Booking flow", () => {
     
     mockDataStore.patientProfile = { _id: "pat-abc", user: "user-patient-123", fullName: "Frank Patient" };
     mockDataStore.doctors = [{ _id: "doc-xyz", fullName: "Dr. Gregory House", specialization: "Diagnostic Medicine" }];
-    mockDataStore.doctorSlots = [{ _id: "slot-xyz", date: "2030-07-20", time: "14:00", status: "Scheduled", NumberOfPatients: 0, MaxNumberOfPatients: 5 }];
+    const todayStr = new Date().toISOString().split("T")[0];
+    mockDataStore.doctorSlots = [{ _id: "slot-xyz", date: todayStr, time: "23:59", status: "Scheduled", NumberOfPatients: 0, MaxNumberOfPatients: 5 }];
 
     vi.mocked(getPatientProfile).mockResolvedValue(mockDataStore.patientProfile);
     vi.mocked(getDoctors).mockResolvedValue(mockDataStore.doctors);
@@ -417,7 +418,7 @@ describe("Patient Dashboard - Booking flow", () => {
     fireEvent.click(screen.getByRole("button", { name: /View Slots/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("14:00")).toBeInTheDocument();
+      expect(screen.getByText("23:59")).toBeInTheDocument();
     });
 
     // Select slot to book

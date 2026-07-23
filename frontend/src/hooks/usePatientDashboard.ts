@@ -26,7 +26,7 @@ export function usePatientDashboard() {
   const [activeTab, setActiveTab] = useState<PatientTab>("overview");
   const [searchDoc, setSearchDoc] = useState("");
   const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
-  const [slotDateFilter, setSlotDateFilter] = useState("");
+  const [slotDateFilter, setSlotDateFilter] = useState(new Date().toISOString().split("T")[0]);
   const [bookingMsg, setBookingMsg] = useState<string | null>(null);
   const [symptoms, setSymptoms] = useState("");
 
@@ -148,7 +148,7 @@ export function usePatientDashboard() {
 
   const handleSelectDoctor = (doc: any) => {
     setSelectedDoc(doc);
-    setSlotDateFilter("");
+    setSlotDateFilter(new Date().toISOString().split("T")[0]);
   };
 
   // Mutations

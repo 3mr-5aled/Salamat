@@ -8,6 +8,7 @@ import {
   Settings,
   User,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import type { PatientTab } from "../../hooks/usePatientDashboard";
 import AppLogo from "../../assets/app-logo-transparent.png";
@@ -100,14 +101,14 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
 
               {/* Actions */}
               <div className="p-1.5 flex flex-col gap-0.5">
-                <a
-                  href="/profile"
+                <Link
+                  to="/profile"
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#64748B] hover:bg-slate-50 hover:text-[#0F172A] transition-all cursor-pointer"
                   onClick={() => setProfileOpen(false)}
                 >
                   <Settings size={15} />
                   <span>Profile Settings</span>
-                </a>
+                </Link>
                 <button
                   onClick={() => { setProfileOpen(false); logout(); }}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-[#DC2626] hover:bg-red-50 transition-all cursor-pointer w-full text-left"

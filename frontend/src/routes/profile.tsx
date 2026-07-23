@@ -8,7 +8,7 @@ import { DoctorProfileForm } from "../components/profile/DoctorProfileForm";
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/app/profile",
+  path: "/profile",
   component: ProfilePageComponent,
 });
 
@@ -41,12 +41,18 @@ function ProfilePageComponent() {
     );
   }
 
-  const initials = user?.name
-    ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
-    : "U";
-
   const isDoctor = user?.role === "doctor";
   const isPatient = user?.role === "patient";
+
+  const displayName = isPatient
+    ? patientData?.fullName
+    : isDoctor
+    ? doctorData?.fullName
+    : user?.fullName || user?.name;
+
+  const firstLetter = displayName && displayName.trim()
+    ? displayName.trim()[0].toUpperCase()
+    : "U";
 
   return (
     <div className="w-full h-full overflow-y-auto bg-gradient-to-br from-[#F8FAFC] via-[#EFF6FF] to-[#E0F2FE] py-8 px-4 flex justify-center items-start">
@@ -87,7 +93,7 @@ function ProfilePageComponent() {
                     : "bg-slate-700"
                 }`}
               >
-                {initials}
+                {firstLetter}
               </div>
               <div className="mb-1 bg-white px-3 py-1 rounded-xl shadow-sm border border-slate-100 text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
                 {user?.role} Portal

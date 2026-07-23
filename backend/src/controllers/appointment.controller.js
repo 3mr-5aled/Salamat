@@ -119,6 +119,7 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
         time: timeStr,
         duration: session.appointmentDuration,
         status: app.status === "Cancelled" ? "Cancelled" : "Scheduled",
+        sessionStatus: session.status,
         notes: app.notes,
         patient: patientArray,
         createdAt: app.createdAt,

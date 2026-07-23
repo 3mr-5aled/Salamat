@@ -403,6 +403,7 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
             </div>
           ) : (() => {
             const renderSlotCard = (slot: any) => {
+              const isSlotPast = slot.appointmentTime ? new Date(slot.appointmentTime) < new Date() : false;
               return (
                 <Card
                   key={slot._id}
@@ -454,7 +455,7 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
                       {slot.status}
                     </span>
 
-                    {slot.status !== "Completed" && slot.status !== "Cancelled" && (
+                    {slot.status !== "Completed" && slot.status !== "Cancelled" && !isSlotPast && (
                       <Button
                         size="sm"
                         variant="outline"

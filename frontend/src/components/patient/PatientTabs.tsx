@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   CalendarCheck,
   Award,
@@ -10,6 +10,14 @@ import {
   Clock,
   FileText,
   XCircle,
+  Baby,
+  Brain,
+  Eye,
+  Smile,
+  Stethoscope,
+  Sparkles,
+  Shield,
+  Activity,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
@@ -21,6 +29,33 @@ import { formatTimeInterval } from "../../lib/formatters";
 import { useProfile } from "../../hooks/useProfile";
 import { PatientProfileForm } from "../profile/PatientProfileForm";
 import type { usePatientDashboard } from "../../hooks/usePatientDashboard";
+
+const SPECIALTY_MAP: Record<
+  string,
+  { icon: React.ComponentType<any>; color: string; bg: string; border: string }
+> = {
+  Cardiology: { icon: Heart, color: "#E11D48", bg: "#FFF1F2", border: "#FFE4E6" },
+  Pediatrics: { icon: Baby, color: "#D97706", bg: "#FEF3C7", border: "#FDE68A" },
+  Orthopedics: { icon: Activity, color: "#0284C7", bg: "#F0F9FF", border: "#E0F2FE" },
+  Oncology: { icon: Shield, color: "#4F46E5", bg: "#EEF2FF", border: "#E0E7FF" },
+  Neurology: { icon: Brain, color: "#7C3AED", bg: "#F5F3FF", border: "#EDE9FE" },
+  "Obstetrics and Gynecology": { icon: Sparkles, color: "#DB2777", bg: "#FDF2F8", border: "#FCE7F3" },
+  Dermatology: { icon: Sparkles, color: "#0D9488", bg: "#F0FDFA", border: "#CCFBF1" },
+  Ophthalmology: { icon: Eye, color: "#059669", bg: "#ECFDF5", border: "#D1FAE5" },
+  Dental: { icon: Smile, color: "#0891B2", bg: "#ECFEFF", border: "#CFFAFE" },
+  "Internal Medicine": { icon: Stethoscope, color: "#475569", bg: "#F8FAFC", border: "#F1F5F9" },
+  "ENT (Otolaryngology)": { icon: Stethoscope, color: "#2563EB", bg: "#EFF6FF", border: "#DBEAFE" },
+};
+
+const getSpecialtyData = (spec: string) => {
+  const normalized = spec.trim().toLowerCase();
+  for (const [key, value] of Object.entries(SPECIALTY_MAP)) {
+    if (key.toLowerCase() === normalized) {
+      return value;
+    }
+  }
+  return { icon: Stethoscope, color: "#2563EB", bg: "#EFF6FF", border: "#DBEAFE" };
+};
 
 interface PatientTabsProps {
   patient: ReturnType<typeof usePatientDashboard>;
@@ -51,6 +86,20 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
     handleSelectDoctor,
     handleCancel,
   } = patient as any;
+
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+
+  // Get unique specialties present in all doctors
+  const uniqueSpecialties = Array.from(
+    new Set(doctors.map((d: any) => d.specialization || d.specialty).filter(Boolean) as string[])
+  ).sort();
+
+  // Filter doctors based on selected category/specialty
+  const filteredDoctors = doctors.filter((doc: any) => {
+    if (!selectedSpecialty) return true;
+    const spec = doc.specialization || doc.specialty || "";
+    return spec.toLowerCase() === selectedSpecialty.toLowerCase();
+  });
 
   return (
     <>
@@ -195,6 +244,73 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
             </div>
           </div>
 
+          {/* Clinic Specialty Categories (Horizontal Scroll) */}
+          {uniqueSpecialties.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-[#64748B] uppercase tracking-wider px-1">
+                Filter by Specialty
+              </Label>
+              <div
+                className="flex gap-3 overflow-x-auto pb-3 pt-1 -mx-6 px-6 md:-mx-8 md:px-8 scrollbar-none"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {/* "All" Specialties filter option */}
+                <button
+                  onClick={() => setSelectedSpecialty(null)}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border text-xs font-bold whitespace-nowrap cursor-pointer transition-all duration-300 hover:-translate-y-0.5 active:scale-95 shrink-0 snap-start bg-white shadow-[0_4px_12px_rgba(0,0,0,0.015)] border-slate-100/80 hover:border-slate-200"
+                  style={{
+                    backgroundColor: selectedSpecialty === null ? "#EFF6FF" : undefined,
+                    borderColor: selectedSpecialty === null ? "#2563EB" : undefined,
+                    color: selectedSpecialty === null ? "#2563EB" : "#475569",
+                    boxShadow: selectedSpecialty === null ? "0 10px 20px -5px rgba(37,99,235,0.2)" : undefined,
+                  }}
+                >
+                  <div
+                    className="p-1.5 rounded-lg flex items-center justify-center transition-colors"
+                    style={{
+                      backgroundColor: selectedSpecialty === null ? "#FFFFFF" : "#EFF6FF",
+                      color: "#2563EB",
+                    }}
+                  >
+                    <Stethoscope size={16} />
+                  </div>
+                  <span>All Specialties</span>
+                </button>
+
+                {uniqueSpecialties.map((spec) => {
+                  const mapData = getSpecialtyData(spec);
+                  const IconComp = mapData.icon;
+                  const isActive = selectedSpecialty?.toLowerCase() === spec.toLowerCase();
+
+                  return (
+                    <button
+                      key={spec}
+                      onClick={() => setSelectedSpecialty(isActive ? null : spec)}
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border text-xs font-bold whitespace-nowrap cursor-pointer transition-all duration-300 hover:-translate-y-0.5 active:scale-95 shrink-0 snap-start bg-white shadow-[0_4px_12px_rgba(0,0,0,0.015)] border-slate-100/80 hover:border-slate-200"
+                      style={{
+                        backgroundColor: isActive ? mapData.bg : undefined,
+                        borderColor: isActive ? mapData.color : undefined,
+                        color: isActive ? mapData.color : "#475569",
+                        boxShadow: isActive ? `0 10px 20px -5px ${mapData.color}25` : undefined,
+                      }}
+                    >
+                      <div
+                        className="p-1.5 rounded-lg flex items-center justify-center transition-colors"
+                        style={{
+                          backgroundColor: isActive ? "#FFFFFF" : mapData.bg,
+                          color: mapData.color,
+                        }}
+                      >
+                        <IconComp size={16} />
+                      </div>
+                      <span>{spec}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {bookingMsg && (
             <div className="bg-[#2563EB]/10 border border-[#2563EB]/20 text-sm font-medium text-[#2563EB] p-4 rounded-xl flex items-center gap-2">
               <CalendarCheck size={18} />
@@ -203,9 +319,9 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
           )}
 
           {/* Doctors Grid */}
-          {doctors.length > 0 ? (
+          {filteredDoctors.length > 0 ? (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-              {doctors.map((doc: any) => (
+              {filteredDoctors.map((doc: any) => (
                 <Card
                   key={doc._id}
                   className="rounded-2xl border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] transition-all duration-300 flex flex-col justify-between overflow-hidden bg-white"
@@ -216,9 +332,24 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                         <CardTitle className="text-lg font-bold text-[#0F172A]">
                           {doc.fullName || doc.user?.name || "Dr. Care"}
                         </CardTitle>
-                        <span className="inline-flex mt-1.5 bg-[#14B8A6]/10 text-[#14B8A6] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                          {doc.specialization || doc.specialty || "Specialist"}
-                        </span>
+                        {(() => {
+                          const specName = doc.specialization || doc.specialty || "Specialist";
+                          const specData = getSpecialtyData(specName);
+                          const SpecIcon = specData.icon;
+                          return (
+                            <span
+                              className="inline-flex items-center gap-1.5 mt-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border"
+                              style={{
+                                backgroundColor: specData.bg,
+                                color: specData.color,
+                                borderColor: specData.border,
+                              }}
+                            >
+                              <SpecIcon size={12} style={{ color: specData.color }} />
+                              <span>{specName}</span>
+                            </span>
+                          );
+                        })()}
                       </div>
                       <div className="w-10 h-10 rounded-full bg-[#2563EB]/5 flex items-center justify-center text-[#2563EB]">
                         <Award size={20} />
@@ -254,7 +385,9 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
               </div>
               <h3 className="font-bold text-lg text-[#0F172A] mb-2">No Doctors Found</h3>
               <p className="text-sm text-[#64748B] leading-relaxed">
-                {searchDoc
+                {selectedSpecialty
+                  ? `No specialists found in "${selectedSpecialty}". Try selecting another category.`
+                  : searchDoc
                   ? `No doctor or specialty matches "${searchDoc}". Try searching another name or specialty.`
                   : "No medical specialists are currently registered in the system."}
               </p>
@@ -273,11 +406,30 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
               <CardContent className="p-6 space-y-6">
                 {/* Step 1: Select Date of Appointment */}
                 {(() => {
-                  const uniqueSlotDates: string[] = Array.from(
-                    new Set<string>(
-                      docSlots.map((s: any) => new Date(s.date).toISOString().split("T")[0])
-                    )
-                  ).sort();
+                  const uniqueSlotDates: string[] = (() => {
+                    const days = [];
+                    const now = new Date();
+                    for (let i = 0; i < 5; i++) {
+                      const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
+                      days.push(d.toISOString().split("T")[0]);
+                    }
+                    return days;
+                  })();
+
+                  const getDayLabel = (dStr: string) => {
+                    const todayStr = new Date().toISOString().split("T")[0];
+                    const tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
+                    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+                    if (dStr === todayStr) return "Today";
+                    if (dStr === tomorrowStr) return "Tomorrow";
+
+                    return new Date(dStr + "T00:00:00").toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      weekday: "short",
+                    });
+                  };
 
                   return (
                     <div className="space-y-3 pb-4 border-b border-slate-100">
@@ -312,7 +464,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                             }`}
                           >
-                            {new Date(dStr).toLocaleDateString(undefined, { month: "short", day: "numeric", weekday: "short" })}
+                            {getDayLabel(dStr)}
                           </button>
                         ))}
                       </div>
@@ -516,9 +668,9 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
               let showCancel = false;
               let showViewRx = false;
 
-              if (booking.status === "Cancelled") {
+              if (booking.status === "Cancelled" || booking.sessionStatus === "Cancelled") {
                 badgeColor = "bg-slate-100 text-slate-500 border border-slate-200";
-                statusLabel = "Cancelled";
+                statusLabel = booking.sessionStatus === "Cancelled" ? "Cancelled (Session Cancelled)" : "Cancelled";
               } else if (booking.status === "Completed") {
                 badgeColor = "bg-[#2563EB]/10 text-[#2563EB]";
                 statusLabel = "Completed";
@@ -546,11 +698,24 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                       <h3 className="font-bold text-lg text-[#0F172A]">
                         {booking.doctor?.fullName || "Doctor Specialist"}
                       </h3>
-                      {booking.doctor?.specialization && (
-                        <span className="bg-[#14B8A6]/10 text-[#14B8A6] text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                          {booking.doctor.specialization}
-                        </span>
-                      )}
+                      {booking.doctor?.specialization && (() => {
+                        const specName = booking.doctor.specialization;
+                        const specData = getSpecialtyData(specName);
+                        const SpecIcon = specData.icon;
+                        return (
+                          <span
+                            className="inline-flex items-center gap-1 mt-0.5 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border"
+                            style={{
+                              backgroundColor: specData.bg,
+                              color: specData.color,
+                              borderColor: specData.border,
+                            }}
+                          >
+                            <SpecIcon size={10} style={{ color: specData.color }} />
+                            <span>{specName}</span>
+                          </span>
+                        );
+                      })()}
                     </div>
                     
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-xs font-semibold text-[#64748B]">

@@ -9,6 +9,7 @@ import {
   Edit3,
   Link2Off,
   RotateCcw,
+  XCircle,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
@@ -72,6 +73,9 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
     setAdminPastSlotsOpen,
     loadingMessages,
     messages,
+    slotsCancelDate,
+    setSlotsCancelDate,
+    handleAdminCancelDay,
   } = admin as any;
 
   return (
@@ -514,6 +518,58 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
               <span>Create Session</span>
             </Button>
           </div>
+
+          <Card className="rounded-2xl border-slate-100 shadow-sm p-5 bg-white space-y-4">
+            <div>
+              <h3 className="text-sm font-bold text-[#0F172A]">Cancel Doctor's Day (Vacation / Sickness)</h3>
+              <p className="text-xs text-[#64748B] mt-0.5">Cancel all remaining sessions for today or full day sessions for future dates.</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="cancel-doc-select" className="text-xs font-bold whitespace-nowrap">Select Doctor:</Label>
+                <select
+                  id="cancel-doc-select"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs focus:outline-none w-full sm:w-56"
+                  value={slotsFilterDoctorId}
+                  onChange={(e) => setSlotsFilterDoctorId(e.target.value)}
+                >
+                  <option value="">-- Select Doctor --</option>
+                  {doctors.map((doc: any) => (
+                    <option key={doc._id} value={doc._id}>
+                      {doc.fullName} ({doc.specialization})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Label htmlFor="cancel-date-select" className="text-xs font-bold whitespace-nowrap">Date:</Label>
+                <input
+                  id="cancel-date-select"
+                  type="date"
+                  value={slotsCancelDate}
+                  onChange={(e) => setSlotsCancelDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="h-9 text-xs border border-slate-200 rounded-xl px-3 text-[#0F172A] focus:outline-none focus:border-[#2563EB] bg-white cursor-pointer"
+                />
+              </div>
+
+              <Button
+                disabled={!slotsFilterDoctorId}
+                size="sm"
+                variant="outline"
+                onClick={handleAdminCancelDay}
+                className="border-red-500 text-red-500 hover:bg-red-500/5 hover:border-red-600 hover:text-red-600 rounded-xl px-4 py-2 text-xs font-bold cursor-pointer flex items-center gap-1.5 disabled:opacity-30 self-end sm:self-center"
+              >
+                <XCircle size={14} />
+                <span>
+                  {!slotsCancelDate || slotsCancelDate === new Date().toISOString().split("T")[0]
+                    ? "Cancel Rest of Today"
+                    : "Cancel Full Day"}
+                </span>
+              </Button>
+            </div>
+          </Card>
 
           {(() => {
             if (loadingSlots) {

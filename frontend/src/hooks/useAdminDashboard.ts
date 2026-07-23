@@ -29,6 +29,7 @@ import {
   deleteAppointmentSlot,
   createAppointmentSlot,
   updateAppointmentSlot,
+  cancelSessionsOnDate,
 } from "../services/appointment";
 import api from "../services/api";
 
@@ -44,6 +45,9 @@ export function useAdminDashboard() {
   // Admin Slot Management States
   const [slotsFilterDoctorId, setSlotsFilterDoctorId] = useState("");
   const [slotsDateFilter, setSlotsDateFilter] = useState("");
+  const [slotsCancelDate, setSlotsCancelDate] = useState(
+    new Date().toISOString().split("T")[0] // defaults to today
+  );
   const [adminSlotModalOpen, setAdminSlotModalOpen] = useState(false);
   const [editingSlot, setEditingSlot] = useState<any | null>(null);
   const [adminSlotDate, setAdminSlotDate] = useState("");
@@ -351,6 +355,46 @@ export function useAdminDashboard() {
     })) return;
 
     await deleteAdminSlotMutation.mutateAsync(slotId);
+  };
+
+  const cancelDayAdminMutation = useMutation({
+    mutationFn: ({ doctorId, date }: { doctorId: string; date: string }) =>
+      cancelSessionsOnDate(doctorId, date),
+    onMutate: () => {
+      setActionError(null);
+      setActionSuccess(null);
+    },
+    onSuccess: (data) => {
+      setActionSuccess(
+        `Cancelled ${data.cancelledSessions} session(s) and ${data.cancelledAppointments} appointment(s).`
+      );
+      queryClient.invalidateQueries({ queryKey: ["adminFilteredSlots"] });
+      queryClient.invalidateQueries({ queryKey: ["adminAppointments"] });
+      queryClient.invalidateQueries({ queryKey: ["doctorAppointments"] });
+    },
+    onError: (err: any) => {
+      setActionError(getFriendlyErrorMessage(err));
+    },
+  });
+
+  const handleAdminCancelDay = async () => {
+    if (!slotsFilterDoctorId) return;
+    const isToday =
+      slotsCancelDate === new Date().toISOString().split("T")[0];
+    const confirmed = await customConfirm({
+      title: isToday ? "Cancel Rest of Today" : "Cancel Entire Day",
+      message: isToday
+        ? "This will cancel all remaining sessions for the selected doctor today. This cannot be undone."
+        : `This will cancel ALL sessions for the selected doctor on ${slotsCancelDate} (e.g. vacation / sickness). This cannot be undone.`,
+      confirmText: isToday ? "Cancel Rest of Today" : "Cancel Full Day",
+      variant: "danger",
+    });
+    if (confirmed) {
+      await cancelDayAdminMutation.mutateAsync({
+        doctorId: slotsFilterDoctorId,
+        date: slotsCancelDate,
+      });
+    }
   };
 
 
@@ -895,6 +939,9 @@ export function useAdminDashboard() {
     setAdminSlotDuration,
     handleCreateAdminSlot,
     handleDeleteAdminSlot,
+    slotsCancelDate,
+    setSlotsCancelDate,
+    handleAdminCancelDay,
 
     handleTogglePatientAppts,
     handleResetSlotFilters,

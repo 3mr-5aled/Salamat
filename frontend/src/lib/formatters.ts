@@ -24,3 +24,9 @@ export const getAge = (dobString?: string): number | null => {
     return null;
   }
 };
+
+export const getLocalDateString = (d = new Date()): string => {
+  const offset = d.getTimezoneOffset();
+  const localDate = new Date(d.getTime() - offset * 60 * 1000);
+  return localDate.toISOString().split("T")[0];
+};

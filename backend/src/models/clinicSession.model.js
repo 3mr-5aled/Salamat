@@ -27,7 +27,7 @@ const clinicSessionSchema = new mongoose.Schema(
     appointmentDuration: {
       type: Number, // In minutes, e.g., 30
       required: [true, "Appointment duration is required"],
-      default: 30,
+      default: 15,
     },
     status: {
       type: String,

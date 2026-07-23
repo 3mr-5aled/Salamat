@@ -242,7 +242,7 @@ const seedAll = async () => {
           date: sessionDate,
           startTime: "09:00",
           endTime: "12:00",
-          appointmentDuration: 30,
+          appointmentDuration: 15,
           status: "Open",
         });
         createdSessions.push(session);
@@ -279,7 +279,7 @@ const seedAll = async () => {
     await Appointment.create({
       session: todaySession._id,
       patient: createdPatients[0]._id,
-      slotIndex: 1,
+      slotIndex: 2,
       appointmentTime: todayApptTime,
       status: "Scheduled",
       notes: "Follow-up consultation",
@@ -295,7 +295,7 @@ const seedAll = async () => {
     await Appointment.create({
       session: upcomingSession._id,
       patient: createdPatients[1]._id,
-      slotIndex: 2,
+      slotIndex: 4,
       appointmentTime: upcomingTime,
       status: "Scheduled",
       notes: "Routine checkup",

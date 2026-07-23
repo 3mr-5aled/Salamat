@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { Route } from "./app";
 import type { ReactElement } from "react";
+import { getLocalDateString } from "../lib/formatters";
 
 import { ModalProvider } from "../contexts/ModalContext";
 
@@ -151,7 +152,7 @@ describe("Doctor Slots Tab and Functionality", () => {
     mockDataStore.doctorAppointments = [
       {
         _id: "slot-1",
-        date: new Date().toISOString().split("T")[0],
+        date: getLocalDateString(),
         time: "09:00",
         duration: 60,
         NumberOfPatients: 0,
@@ -287,7 +288,7 @@ describe("Doctor Slots Tab and Functionality", () => {
     it("allows a doctor to approve a pending registration", async () => {
       const mockAppointments = [{
         _id: "slot-999",
-        date: new Date().toISOString().split("T")[0],
+        date: getLocalDateString(),
         time: "11:00",
         duration: 30,
         status: "Scheduled",
@@ -326,7 +327,7 @@ describe("Doctor Slots Tab and Functionality", () => {
     it("allows a doctor to complete consultation with diagnosis and prescriptions", async () => {
       const mockAppointments = [{
         _id: "slot-888",
-        date: new Date().toISOString().split("T")[0],
+        date: getLocalDateString(),
         time: "11:00",
         duration: 30,
         status: "Scheduled",
@@ -394,7 +395,7 @@ describe("Patient Dashboard - Booking flow", () => {
     
     mockDataStore.patientProfile = { _id: "pat-abc", user: "user-patient-123", fullName: "Frank Patient" };
     mockDataStore.doctors = [{ _id: "doc-xyz", fullName: "Dr. Gregory House", specialization: "Diagnostic Medicine" }];
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getLocalDateString();
     mockDataStore.doctorSlots = [{ _id: "slot-xyz", date: todayStr, time: "23:59", status: "Scheduled", NumberOfPatients: 0, MaxNumberOfPatients: 5 }];
 
     vi.mocked(getPatientProfile).mockResolvedValue(mockDataStore.patientProfile);

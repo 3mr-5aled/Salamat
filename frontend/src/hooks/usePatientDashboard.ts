@@ -13,6 +13,7 @@ import {
   getAppointments,
 } from "../services/appointment";
 import { getTodayTipIndex } from "../lib/wellnessTips";
+import { getLocalDateString } from "../lib/formatters";
 import type { MappedPatientBooking } from "../types";
 
 export type PatientTab = "overview" | "find-doctor" | "bookings" | "profile";
@@ -26,7 +27,7 @@ export function usePatientDashboard() {
   const [activeTab, setActiveTab] = useState<PatientTab>("overview");
   const [searchDoc, setSearchDoc] = useState("");
   const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
-  const [slotDateFilter, setSlotDateFilter] = useState(new Date().toISOString().split("T")[0]);
+  const [slotDateFilter, setSlotDateFilter] = useState(getLocalDateString());
   const [bookingMsg, setBookingMsg] = useState<string | null>(null);
   const [symptoms, setSymptoms] = useState("");
 
@@ -148,7 +149,7 @@ export function usePatientDashboard() {
 
   const handleSelectDoctor = (doc: any) => {
     setSelectedDoc(doc);
-    setSlotDateFilter(new Date().toISOString().split("T")[0]);
+    setSlotDateFilter(getLocalDateString());
   };
 
   // Mutations

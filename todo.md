@@ -2,12 +2,12 @@
 
 ## at quick booking or patient booking :
 
-- [ ] make default date as today and bring any easy date picker
+- [x] make default date as today and bring any easy date picker
 
 ## at slots tab :
 
 - [x] on slot cancel it cancels the whole day or the rest of day for the doctor.
-- [ ] make session default time is 15 minutes
+- [x] make session default time is 15 minutes
 
 # Doctor portal
 

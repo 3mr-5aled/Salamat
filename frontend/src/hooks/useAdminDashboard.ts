@@ -32,6 +32,7 @@ import {
   cancelSessionsOnDate,
 } from "../services/appointment";
 import api from "../services/api";
+import { getLocalDateString } from "../lib/formatters";
 
 export function useAdminDashboard() {
   const queryClient = useQueryClient();
@@ -46,14 +47,14 @@ export function useAdminDashboard() {
   const [slotsFilterDoctorId, setSlotsFilterDoctorId] = useState("");
   const [slotsDateFilter, setSlotsDateFilter] = useState("");
   const [slotsCancelDate, setSlotsCancelDate] = useState(
-    new Date().toISOString().split("T")[0] // defaults to today
+    getLocalDateString() // defaults to today
   );
   const [adminSlotModalOpen, setAdminSlotModalOpen] = useState(false);
   const [editingSlot, setEditingSlot] = useState<any | null>(null);
-  const [adminSlotDate, setAdminSlotDate] = useState("");
+  const [adminSlotDate, setAdminSlotDate] = useState(getLocalDateString());
   const [adminSlotTime, setAdminSlotTime] = useState("08:00");
   const [adminSlotEndTime, setAdminSlotEndTime] = useState("12:00");
-  const [adminSlotDuration, setAdminSlotDuration] = useState(30);
+  const [adminSlotDuration, setAdminSlotDuration] = useState(15);
   const [adminTodaySlotsOpen, setAdminTodaySlotsOpen] = useState(true);
   const [adminUpcomingSlotsOpen, setAdminUpcomingSlotsOpen] = useState(true);
   const [adminPastSlotsOpen, setAdminPastSlotsOpen] = useState(false);
@@ -79,7 +80,7 @@ export function useAdminDashboard() {
   const [bookingModalPatient, setBookingModalPatient] = useState<any | null>(null);
   const [bookingClinicId, setBookingClinicId] = useState("");
   const [bookingDoctorId, setBookingDoctorId] = useState("");
-  const [bookingDateFilter, setBookingDateFilter] = useState("");
+  const [bookingDateFilter, setBookingDateFilter] = useState(getLocalDateString());
   const [selectedSlotId, setSelectedSlotId] = useState("");
 
   // Emergency Contact Modal state
@@ -380,7 +381,7 @@ export function useAdminDashboard() {
   const handleAdminCancelDay = async () => {
     if (!slotsFilterDoctorId) return;
     const isToday =
-      slotsCancelDate === new Date().toISOString().split("T")[0];
+      slotsCancelDate === getLocalDateString();
     const confirmed = await customConfirm({
       title: isToday ? "Cancel Rest of Today" : "Cancel Entire Day",
       message: isToday

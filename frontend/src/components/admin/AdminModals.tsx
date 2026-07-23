@@ -619,6 +619,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                     <Input
                       id="b-date-filter"
                       type="date"
+                      min={new Date().toISOString().split("T")[0]}
                       disabled={!bookingDoctorId}
                       value={bookingDateFilter}
                       onChange={(e) => {
@@ -1064,6 +1065,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                   <Input
                     id="a-slot-date"
                     type="date"
+                    min={new Date().toISOString().split("T")[0]}
                     required
                     value={adminSlotDate}
                     onChange={(e) => setAdminSlotDate(e.target.value)}

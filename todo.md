@@ -34,7 +34,7 @@
 
 # [ ] leave 30 min for emergency on creating slots
 
-- [ ] in the seed add all patient info like phone number and emergency and date of birth
+- [x] in the seed add all patient info like phone number and emergency and date of birth
 
 # General
 

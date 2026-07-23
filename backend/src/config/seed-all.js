@@ -171,6 +171,12 @@ const seedAll = async () => {
         diseases: ["Diabetes"],
         phone: "01107654321",
         gender: "male",
+        dateOfBirth: "1992-04-12",
+        emergencyContact: {
+          name: "Ali Mohamed",
+          relation: "Father",
+          phone: "01007654321",
+        },
       },
       {
         name: "Fatma Ibrahim",
@@ -179,6 +185,12 @@ const seedAll = async () => {
         diseases: ["Hypertension", "Asthma"],
         phone: "01207654321",
         gender: "female",
+        dateOfBirth: "1995-09-23",
+        emergencyContact: {
+          name: "Ibrahim Hassan",
+          relation: "Husband",
+          phone: "01507654321",
+        },
       },
     ];
 
@@ -199,6 +211,9 @@ const seedAll = async () => {
         gender: info.gender,
         bloodType: info.bloodType,
         chronicDiseases: info.diseases,
+        phone: info.phone,
+        dateOfBirth: info.dateOfBirth ? new Date(info.dateOfBirth) : undefined,
+        emergencyContact: info.emergencyContact,
         medicalRecordNumber:
           "MRN-" + Math.floor(100000 + Math.random() * 900000),
       });

@@ -337,15 +337,23 @@ class AppointmentService {
   async cancelSessionsOnDate(doctorId, date, requestedByUserId) {
     try {
       const now = new Date();
-      const target = new Date(date);
 
+      // Timezone-safe local date calculation
+      const getLocalDateString = (d) => {
+        const offset = d.getTimezoneOffset();
+        const localDate = new Date(d.getTime() - offset * 60 * 1000);
+        return localDate.toISOString().split("T")[0];
+      };
+
+      const targetDateStr = date;
+      const todayDateStr = getLocalDateString(now);
+      const isToday = targetDateStr === todayDateStr;
+
+      const target = new Date(date);
       const dayStart = new Date(target);
       dayStart.setHours(0, 0, 0, 0);
       const dayEnd = new Date(target);
       dayEnd.setHours(23, 59, 59, 999);
-
-      const isToday =
-        target.toISOString().split("T")[0] === now.toISOString().split("T")[0];
 
       const currentTimeStr = `${String(now.getHours()).padStart(2, "0")}:${String(
         now.getMinutes()
@@ -358,9 +366,9 @@ class AppointmentService {
         status: { $ne: "Cancelled" },
       });
 
-      // If today -> only future sessions; if future date -> all sessions
+      // If today -> cancel active/future sessions based on endTime; if future date -> all sessions
       const targets = isToday
-        ? sessions.filter((s) => s.startTime > currentTimeStr)
+        ? sessions.filter((s) => s.endTime > currentTimeStr)
         : sessions;
 
       if (targets.length === 0) {

@@ -6,6 +6,7 @@ import { Badge } from "../ui/badge";
 import { DatePicker } from "../ui/date-picker";
 import { TimeSelectPair } from "../shared/TimeSelectPair";
 import { AlertCircle } from "lucide-react";
+import { getLocalDateString } from "../../lib/formatters";
 import {
   Dialog,
   DialogContent,
@@ -619,7 +620,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                     <Input
                       id="b-date-filter"
                       type="date"
-                      min={new Date().toISOString().split("T")[0]}
+                      min={getLocalDateString()}
                       disabled={!bookingDoctorId}
                       value={bookingDateFilter}
                       onChange={(e) => {
@@ -1065,7 +1066,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                   <Input
                     id="a-slot-date"
                     type="date"
-                    min={new Date().toISOString().split("T")[0]}
+                    min={getLocalDateString()}
                     required
                     value={adminSlotDate}
                     onChange={(e) => setAdminSlotDate(e.target.value)}

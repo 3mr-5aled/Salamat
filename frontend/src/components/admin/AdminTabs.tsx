@@ -16,7 +16,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import MedicalNotesDisplay from "../MedicalNotesDisplay";
-import { formatTimeInterval } from "../../lib/formatters";
+import { formatTimeInterval, getLocalDateString } from "../../lib/formatters";
 import type { useAdminDashboard } from "../../hooks/useAdminDashboard";
 
 interface AdminTabsProps {
@@ -544,12 +544,12 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
 
               <div className="flex items-center gap-2">
                 <Label htmlFor="cancel-date-select" className="text-xs font-bold whitespace-nowrap">Date:</Label>
-                <input
+                <Input
                   id="cancel-date-select"
                   type="date"
                   value={slotsCancelDate}
                   onChange={(e) => setSlotsCancelDate(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
+                  min={getLocalDateString()}
                   className="h-9 text-xs border border-slate-200 rounded-xl px-3 text-[#0F172A] focus:outline-none focus:border-[#2563EB] bg-white cursor-pointer"
                 />
               </div>
@@ -563,7 +563,7 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
               >
                 <XCircle size={14} />
                 <span>
-                  {!slotsCancelDate || slotsCancelDate === new Date().toISOString().split("T")[0]
+                  {!slotsCancelDate || slotsCancelDate === getLocalDateString()
                     ? "Cancel Rest of Today"
                     : "Cancel Full Day"}
                 </span>

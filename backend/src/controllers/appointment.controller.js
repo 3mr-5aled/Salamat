@@ -5,6 +5,7 @@ const factory = require("./handlers.factory");
 const { ApiError } = require("../utils");
 const { generateSessionSlots } = require("../utils/helpers/sessionHelper");
 const Patient = require("../models/patient.model");
+const asyncHandler = require("express-async-handler");
 
 // @desc    Create a clinic session (formerly creating a slot)
 // @route   POST /api/appointments
@@ -384,27 +385,23 @@ exports.adminBookController = async (req, res, next) => {
 // @desc    Cancel sessions for a doctor on a date (today = future only; future date = all sessions)
 // @route   PATCH /api/v1/appointments/cancel-sessions-on-date
 // @access  Private (Doctor / Admin)
-exports.cancelSessionsOnDateController = async (req, res, next) => {
-  try {
-    const { doctorId, date } = req.body;
-    if (!doctorId) {
-      return next(new ApiError("doctorId is required", 400));
-    }
-    if (!date) {
-      return next(new ApiError("date is required", 400));
-    }
-
-    const result = await appointmentService.cancelSessionsOnDate(
-      doctorId,
-      date,
-      req.user._id
-    );
-
-    res.status(200).json({
-      status: "success",
-      data: result,
-    });
-  } catch (error) {
-    return next(error);
+exports.cancelSessionsOnDateController = asyncHandler(async (req, res, next) => {
+  const { doctorId, date } = req.body;
+  if (!doctorId) {
+    return next(new ApiError("doctorId is required", 400));
   }
-};
+  if (!date) {
+    return next(new ApiError("date is required", 400));
+  }
+
+  const result = await appointmentService.cancelSessionsOnDate(
+    doctorId,
+    date,
+    req.user._id
+  );
+
+  res.status(200).json({
+    status: "success",
+    data: result,
+  });
+});

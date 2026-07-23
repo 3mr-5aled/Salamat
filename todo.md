@@ -29,8 +29,8 @@
 
 ## in book appointment
 
-- [ ] show doctor default schedule like (Fri 9:00 PM to 12:00 AM)
-- [ ] don't show past slots
+- [x] show doctor default schedule like (Fri 9:00 PM to 12:00 AM)
+- [x] don't show past slots
 
 # [ ] leave 30 min for emergency on creating slots
 

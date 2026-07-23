@@ -57,6 +57,40 @@ const getSpecialtyData = (spec: string) => {
   return { icon: Stethoscope, color: "#2563EB", bg: "#EFF6FF", border: "#DBEAFE" };
 };
 
+const formatAvailability = (availability: any[]) => {
+  if (!availability || availability.length === 0) return "No set schedule";
+
+  const convertTo12Hour = (timeStr: string) => {
+    if (!timeStr) return "";
+    const [hoursStr, minutesStr] = timeStr.split(":");
+    let hours = parseInt(hoursStr, 10);
+    const minutes = minutesStr;
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    return `${hours}:${minutes} ${ampm}`;
+  };
+
+  const dayAbbreviationMap: Record<string, string> = {
+    monday: "Mon",
+    tuesday: "Tue",
+    wednesday: "Wed",
+    thursday: "Thu",
+    friday: "Fri",
+    saturday: "Sat",
+    sunday: "Sun",
+  };
+
+  return availability
+    .map((slot) => {
+      const day = slot.dayOfWeek ? (dayAbbreviationMap[slot.dayOfWeek.toLowerCase()] || slot.dayOfWeek) : "";
+      const start = convertTo12Hour(slot.startTime);
+      const end = convertTo12Hour(slot.endTime);
+      return `${day} ${start} to ${end}`;
+    })
+    .join(", ");
+};
+
 interface PatientTabsProps {
   patient: ReturnType<typeof usePatientDashboard>;
   user: any;
@@ -367,6 +401,12 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                       <Briefcase size={14} className="text-slate-400" />
                       <span>{doc.experience || doc.yearsOfExperience || 0} years medical experience</span>
                     </div>
+                    {doc.availability && doc.availability.length > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#64748B]">
+                        <Clock size={14} className="text-slate-400" />
+                        <span>Schedule: {formatAvailability(doc.availability)}</span>
+                      </div>
+                    )}
                     <Button
                       size="sm"
                       onClick={() => handleSelectDoctor(doc)}
@@ -402,6 +442,12 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                   <Calendar size={18} className="text-[#2563EB]" />
                   Schedule with {selectedDoc.fullName || selectedDoc.user?.name}
                 </CardTitle>
+                {selectedDoc.availability && selectedDoc.availability.length > 0 && (
+                  <CardDescription className="text-xs text-[#64748B] mt-1 font-semibold flex items-center gap-1.5 pl-6">
+                    <Clock size={12} className="text-[#2563EB]" />
+                    <span>Weekly Schedule: {formatAvailability(selectedDoc.availability)}</span>
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent className="p-6 space-y-6">
                 {/* Step 1: Select Date of Appointment */}
@@ -478,7 +524,15 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                     2. Choose Preferred Slot {slotDateFilter ? `for ${new Date(slotDateFilter).toLocaleDateString()}` : "(All Available Dates)"}
                   </Label>
                   {(() => {
+                    const now = new Date();
                     const filteredDocSlots = docSlots.filter((slot: any) => {
+                      // Don't show past slots
+                      const [slotHour, slotMin] = (slot.time || "00:00").split(":").map(Number);
+                      const slotStart = new Date(slot.date);
+                      slotStart.setHours(slotHour, slotMin, 0, 0);
+                      if (slotStart < now) {
+                        return false;
+                      }
                       if (!slotDateFilter) return true;
                       const dStr = new Date(slot.date).toISOString().split("T")[0];
                       return dStr === slotDateFilter;

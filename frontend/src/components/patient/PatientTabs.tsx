@@ -18,6 +18,7 @@ import {
   Sparkles,
   Shield,
   Activity,
+  ArrowLeft,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
@@ -256,181 +257,270 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
 
       {activeTab === "find-doctor" && (
         <div className="space-y-6 max-w-5xl">
-          {/* Header / Search Controls */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-[#0F172A] tracking-tight">
-                Book an Appointment
-              </h2>
-              <p className="text-sm text-[#64748B]">
-                Search specialists by name, specialty, or clinic to view consultation hours.
-              </p>
-            </div>
+          {!selectedDoc ? (
+            <>
+              {/* Header / Search Controls */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-[#0F172A] tracking-tight">
+                    Book an Appointment
+                  </h2>
+                  <p className="text-sm text-[#64748B]">
+                    Search specialists by name, specialty, or clinic to view consultation hours.
+                  </p>
+                </div>
 
-            <div className="relative max-w-xs w-full">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-              <Input
-                placeholder="Search doctors, specialty, or clinic..."
-                className="pl-10 rounded-xl border-[#E2E8F0] focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 transition-all text-sm py-2.5"
-                value={searchDoc}
-                onChange={(e) => setSearchDoc(e.target.value)}
-              />
-            </div>
-          </div>
+                <div className="relative max-w-xs w-full">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <Input
+                    placeholder="Search doctors, specialty, or clinic..."
+                    className="pl-10 rounded-xl border-[#E2E8F0] focus:border-[#2563EB] focus:ring-4 focus:ring-[#2563EB]/10 transition-all text-sm py-2.5"
+                    value={searchDoc}
+                    onChange={(e) => setSearchDoc(e.target.value)}
+                  />
+                </div>
+              </div>
 
-          {/* Clinic Specialty Categories (Horizontal Scroll) */}
-          {uniqueSpecialties.length > 0 && (
-            <div className="space-y-2">
-              <Label className="text-xs font-bold text-[#64748B] uppercase tracking-wider px-1">
-                Filter by Specialty
-              </Label>
-              <div
-                className="flex gap-3 overflow-x-auto pb-3 pt-1 -mx-6 px-6 md:-mx-8 md:px-8 scrollbar-none"
-                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-              >
-                {/* "All" Specialties filter option */}
-                <button
-                  onClick={() => setSelectedSpecialty(null)}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border text-xs font-bold whitespace-nowrap cursor-pointer transition-all duration-300 hover:-translate-y-0.5 active:scale-95 shrink-0 snap-start bg-white shadow-[0_4px_12px_rgba(0,0,0,0.015)] border-slate-100/80 hover:border-slate-200"
-                  style={{
-                    backgroundColor: selectedSpecialty === null ? "#EFF6FF" : undefined,
-                    borderColor: selectedSpecialty === null ? "#2563EB" : undefined,
-                    color: selectedSpecialty === null ? "#2563EB" : "#475569",
-                    boxShadow: selectedSpecialty === null ? "0 10px 20px -5px rgba(37,99,235,0.2)" : undefined,
-                  }}
-                >
+              {/* Clinic Specialty Categories (Horizontal Scroll) */}
+              {uniqueSpecialties.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-[#64748B] uppercase tracking-wider px-1">
+                    Filter by Specialty
+                  </Label>
                   <div
-                    className="p-1.5 rounded-lg flex items-center justify-center transition-colors"
-                    style={{
-                      backgroundColor: selectedSpecialty === null ? "#FFFFFF" : "#EFF6FF",
-                      color: "#2563EB",
-                    }}
+                    className="flex gap-3 overflow-x-auto pb-3 pt-1 -mx-6 px-6 md:-mx-8 md:px-8 scrollbar-none"
+                    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
                   >
-                    <Stethoscope size={16} />
-                  </div>
-                  <span>All Specialties</span>
-                </button>
-
-                {uniqueSpecialties.map((spec) => {
-                  const mapData = getSpecialtyData(spec);
-                  const IconComp = mapData.icon;
-                  const isActive = selectedSpecialty?.toLowerCase() === spec.toLowerCase();
-
-                  return (
+                    {/* "All" Specialties filter option */}
                     <button
-                      key={spec}
-                      onClick={() => setSelectedSpecialty(isActive ? null : spec)}
+                      onClick={() => setSelectedSpecialty(null)}
                       className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border text-xs font-bold whitespace-nowrap cursor-pointer transition-all duration-300 hover:-translate-y-0.5 active:scale-95 shrink-0 snap-start bg-white shadow-[0_4px_12px_rgba(0,0,0,0.015)] border-slate-100/80 hover:border-slate-200"
                       style={{
-                        backgroundColor: isActive ? mapData.bg : undefined,
-                        borderColor: isActive ? mapData.color : undefined,
-                        color: isActive ? mapData.color : "#475569",
-                        boxShadow: isActive ? `0 10px 20px -5px ${mapData.color}25` : undefined,
+                        backgroundColor: selectedSpecialty === null ? "#EFF6FF" : undefined,
+                        borderColor: selectedSpecialty === null ? "#2563EB" : undefined,
+                        color: selectedSpecialty === null ? "#2563EB" : "#475569",
+                        boxShadow: selectedSpecialty === null ? "0 10px 20px -5px rgba(37,99,235,0.2)" : undefined,
                       }}
                     >
                       <div
                         className="p-1.5 rounded-lg flex items-center justify-center transition-colors"
                         style={{
-                          backgroundColor: isActive ? "#FFFFFF" : mapData.bg,
-                          color: mapData.color,
+                          backgroundColor: selectedSpecialty === null ? "#FFFFFF" : "#EFF6FF",
+                          color: "#2563EB",
                         }}
                       >
-                        <IconComp size={16} />
+                        <Stethoscope size={16} />
                       </div>
-                      <span>{spec}</span>
+                      <span>All Specialties</span>
                     </button>
+
+                    {uniqueSpecialties.map((spec) => {
+                      const mapData = getSpecialtyData(spec);
+                      const IconComp = mapData.icon;
+                      const isActive = selectedSpecialty?.toLowerCase() === spec.toLowerCase();
+
+                      return (
+                        <button
+                          key={spec}
+                          onClick={() => setSelectedSpecialty(isActive ? null : spec)}
+                          className="flex items-center gap-3 px-4 py-2.5 rounded-2xl border text-xs font-bold whitespace-nowrap cursor-pointer transition-all duration-300 hover:-translate-y-0.5 active:scale-95 shrink-0 snap-start bg-white shadow-[0_4px_12px_rgba(0,0,0,0.015)] border-slate-100/80 hover:border-slate-200"
+                          style={{
+                            backgroundColor: isActive ? mapData.bg : undefined,
+                            borderColor: isActive ? mapData.color : undefined,
+                            color: isActive ? mapData.color : "#475569",
+                            boxShadow: isActive ? `0 10px 20px -5px ${mapData.color}25` : undefined,
+                          }}
+                        >
+                          <div
+                            className="p-1.5 rounded-lg flex items-center justify-center transition-colors"
+                            style={{
+                              backgroundColor: isActive ? "#FFFFFF" : mapData.bg,
+                              color: mapData.color,
+                            }}
+                          >
+                            <IconComp size={16} />
+                          </div>
+                          <span>{spec}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Doctors Grid */}
+              {filteredDoctors.length > 0 ? (
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+                  {filteredDoctors.map((doc: any) => (
+                    <Card
+                      key={doc._id}
+                      className="rounded-2xl border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] transition-all duration-300 flex flex-col justify-between overflow-hidden bg-white"
+                    >
+                      <CardHeader className="p-6 pb-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <CardTitle className="text-lg font-bold text-[#0F172A]">
+                              {doc.fullName || doc.user?.name || "Dr. Care"}
+                            </CardTitle>
+                            {(() => {
+                              const specName = doc.specialization || doc.specialty || "Specialist";
+                              const specData = getSpecialtyData(specName);
+                              const SpecIcon = specData.icon;
+                              return (
+                                <span
+                                  className="inline-flex items-center gap-1.5 mt-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border"
+                                  style={{
+                                    backgroundColor: specData.bg,
+                                    color: specData.color,
+                                    borderColor: specData.border,
+                                  }}
+                                >
+                                  <SpecIcon size={12} style={{ color: specData.color }} />
+                                  <span>{specName}</span>
+                                </span>
+                              );
+                            })()}
+                          </div>
+                          <div className="w-10 h-10 rounded-full bg-[#2563EB]/5 flex items-center justify-center text-[#2563EB]">
+                            <Award size={20} />
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-6 pt-0 flex flex-col gap-4">
+                        {doc.clinic?.name && (
+                          <div className="text-xs text-slate-500 font-semibold flex items-center gap-1.5">
+                            <Award size={14} className="text-[#2563EB]" />
+                            <span>{doc.clinic.name}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#64748B]">
+                          <Briefcase size={14} className="text-slate-400" />
+                          <span>{doc.experience || doc.yearsOfExperience || 0} years medical experience</span>
+                        </div>
+
+                        {/* Availability Small Cards Grid */}
+                        {doc.availability && doc.availability.length > 0 && (
+                          <div className="space-y-2 mt-1">
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                              <Clock size={14} className="text-[#2563EB]" />
+                              <span>Weekly Schedule</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {doc.availability.map((avail: any, idx: number) => {
+                                const convertTo12Hour = (timeStr: string) => {
+                                  if (!timeStr) return "";
+                                  const [hoursStr, minutesStr] = timeStr.split(":");
+                                  let hours = parseInt(hoursStr, 10);
+                                  const ampm = hours >= 12 ? "PM" : "AM";
+                                  hours = hours % 12;
+                                  hours = hours ? hours : 12;
+                                  return `${hours}:${minutesStr} ${ampm}`;
+                                };
+                                const dayMap: Record<string, string> = {
+                                  monday: "Mon",
+                                  tuesday: "Tue",
+                                  wednesday: "Wed",
+                                  thursday: "Thu",
+                                  friday: "Fri",
+                                  saturday: "Sat",
+                                  sunday: "Sun",
+                                };
+                                const dayLabel = dayMap[avail.dayOfWeek?.toLowerCase()] || avail.dayOfWeek;
+                                return (
+                                  <div
+                                    key={idx}
+                                    className="bg-slate-50 border border-slate-100 px-2 py-1 rounded-xl flex items-center gap-1.5 shadow-[0_2px_8px_rgba(0,0,0,0.005)]"
+                                  >
+                                    <span className="text-[10px] font-bold uppercase text-[#2563EB] tracking-wide">
+                                      {dayLabel}
+                                    </span>
+                                    <span className="text-[10px] font-semibold text-[#64748B]">
+                                      {convertTo12Hour(avail.startTime)} - {convertTo12Hour(avail.endTime)}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        <Button
+                          size="sm"
+                          onClick={() => handleSelectDoctor(doc)}
+                          className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl py-2.5 font-semibold shadow-[0_4px_12px_rgba(37,99,235,0.1)] hover:shadow-[0_4px_20px_rgba(37,99,235,0.2)] transition-all cursor-pointer mt-2"
+                        >
+                          View Slots
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white rounded-3xl border border-slate-100 p-12 text-center max-w-md mx-auto my-6 shadow-sm">
+                  <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mx-auto mb-4">
+                    <Search size={32} />
+                  </div>
+                  <h3 className="font-bold text-lg text-[#0F172A] mb-2">No Doctors Found</h3>
+                  <p className="text-sm text-[#64748B] leading-relaxed">
+                    {selectedSpecialty
+                      ? `No specialists found in "${selectedSpecialty}". Try selecting another category.`
+                      : searchDoc
+                      ? `No doctor or specialty matches "${searchDoc}". Try searching another name or specialty.`
+                      : "No medical specialists are currently registered in the system."}
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Collapsed Back Button & Doctor Compact Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.01)]">
+                <div>
+                  <Button
+                    onClick={() => handleSelectDoctor(null)}
+                    variant="outline"
+                    className="rounded-xl border-slate-200 text-xs font-semibold px-4 py-2 hover:bg-slate-50 flex items-center gap-1.5 w-fit cursor-pointer"
+                  >
+                    <ArrowLeft size={14} />
+                    <span>Back to Doctors List</span>
+                  </Button>
+                </div>
+                {(() => {
+                  const specName = selectedDoc.specialization || selectedDoc.specialty || "Specialist";
+                  const specData = getSpecialtyData(specName);
+                  const SpecIcon = specData.icon;
+                  return (
+                    <div className="flex items-center gap-3">
+                      <div className="text-right sm:text-right text-left">
+                        <h4 className="text-sm font-bold text-[#0F172A]">
+                          {selectedDoc.fullName || selectedDoc.user?.name}
+                        </h4>
+                        <p className="text-[10px] text-[#64748B] font-semibold">
+                          {selectedDoc.clinic?.name || "Clinic Specialist"}
+                        </p>
+                      </div>
+                      <span
+                        className="inline-flex items-center gap-1 text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border"
+                        style={{
+                          backgroundColor: specData.bg,
+                          color: specData.color,
+                          borderColor: specData.border,
+                        }}
+                      >
+                        <SpecIcon size={10} style={{ color: specData.color }} />
+                        <span>{specName}</span>
+                      </span>
+                    </div>
                   );
-                })}
+                })()}
               </div>
-            </div>
+            </>
           )}
 
           {bookingMsg && (
             <div className="bg-[#2563EB]/10 border border-[#2563EB]/20 text-sm font-medium text-[#2563EB] p-4 rounded-xl flex items-center gap-2">
               <CalendarCheck size={18} />
               <span>{bookingMsg}</span>
-            </div>
-          )}
-
-          {/* Doctors Grid */}
-          {filteredDoctors.length > 0 ? (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-              {filteredDoctors.map((doc: any) => (
-                <Card
-                  key={doc._id}
-                  className="rounded-2xl border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_15px_40px_rgba(0,0,0,0.05)] transition-all duration-300 flex flex-col justify-between overflow-hidden bg-white"
-                >
-                  <CardHeader className="p-6 pb-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <CardTitle className="text-lg font-bold text-[#0F172A]">
-                          {doc.fullName || doc.user?.name || "Dr. Care"}
-                        </CardTitle>
-                        {(() => {
-                          const specName = doc.specialization || doc.specialty || "Specialist";
-                          const specData = getSpecialtyData(specName);
-                          const SpecIcon = specData.icon;
-                          return (
-                            <span
-                              className="inline-flex items-center gap-1.5 mt-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider border"
-                              style={{
-                                backgroundColor: specData.bg,
-                                color: specData.color,
-                                borderColor: specData.border,
-                              }}
-                            >
-                              <SpecIcon size={12} style={{ color: specData.color }} />
-                              <span>{specName}</span>
-                            </span>
-                          );
-                        })()}
-                      </div>
-                      <div className="w-10 h-10 rounded-full bg-[#2563EB]/5 flex items-center justify-center text-[#2563EB]">
-                        <Award size={20} />
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6 pt-0 flex flex-col gap-4">
-                    {doc.clinic?.name && (
-                      <div className="text-xs text-slate-500 font-semibold flex items-center gap-1.5">
-                        <Award size={14} className="text-[#2563EB]" />
-                        <span>{doc.clinic.name}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[#64748B]">
-                      <Briefcase size={14} className="text-slate-400" />
-                      <span>{doc.experience || doc.yearsOfExperience || 0} years medical experience</span>
-                    </div>
-                    {doc.availability && doc.availability.length > 0 && (
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#64748B]">
-                        <Clock size={14} className="text-slate-400" />
-                        <span>Schedule: {formatAvailability(doc.availability)}</span>
-                      </div>
-                    )}
-                    <Button
-                      size="sm"
-                      onClick={() => handleSelectDoctor(doc)}
-                      className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl py-2.5 font-semibold shadow-[0_4px_12px_rgba(37,99,235,0.1)] hover:shadow-[0_4px_20px_rgba(37,99,235,0.2)] transition-all cursor-pointer"
-                    >
-                      View Slots
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-3xl border border-slate-100 p-12 text-center max-w-md mx-auto my-6 shadow-sm">
-              <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mx-auto mb-4">
-                <Search size={32} />
-              </div>
-              <h3 className="font-bold text-lg text-[#0F172A] mb-2">No Doctors Found</h3>
-              <p className="text-sm text-[#64748B] leading-relaxed">
-                {selectedSpecialty
-                  ? `No specialists found in "${selectedSpecialty}". Try selecting another category.`
-                  : searchDoc
-                  ? `No doctor or specialty matches "${searchDoc}". Try searching another name or specialty.`
-                  : "No medical specialists are currently registered in the system."}
-              </p>
             </div>
           )}
 

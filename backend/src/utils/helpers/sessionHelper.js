@@ -41,10 +41,13 @@ exports.generateSessionSlots = (session) => {
     const [hours, mins] = timeStr.split(":").map(Number);
     appointmentTime.setHours(hours, mins, 0, 0);
 
+    const isEmergency = slotMinutes >= (endMinutes - 30);
+
     slots.push({
       slotIndex: i,
       time: timeStr,
       appointmentTime,
+      type: isEmergency ? "emergency" : "consultation",
     });
   }
   return slots;

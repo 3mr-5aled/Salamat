@@ -62,7 +62,7 @@ import { getDoctorProfile } from "../services/doctor";
 import {
   getAppointments,
   createAppointmentSlot,
-  cancelClinicSession,
+  cancelSessionsOnDate,
   approvePatientRegistration,
   completeConsultation,
   getDoctorSlots,
@@ -124,6 +124,7 @@ vi.mock("../services/appointment", () => ({
   getAppointments: vi.fn(),
   createAppointmentSlot: vi.fn(),
   cancelClinicSession: vi.fn(),
+  cancelSessionsOnDate: vi.fn(),
   approvePatientRegistration: vi.fn(),
   rejectPatientRegistration: vi.fn(),
   completeConsultation: vi.fn(),
@@ -249,7 +250,7 @@ describe("Doctor Slots Tab and Functionality", () => {
     });
   });
 
-  it("allows a doctor to delete a vacant scheduled slot", async () => {
+  it("allows a doctor to cancel scheduled sessions", async () => {
     const Component = Route.options.component!;
     
     await act(async () => {
@@ -262,26 +263,21 @@ describe("Doctor Slots Tab and Functionality", () => {
       fireEvent.click(slotsTabButton);
     });
 
-    // Wait for slot to render
-    await waitFor(() => {
-      expect(screen.getByText("Morning consultation")).toBeInTheDocument();
-    });
+    // Fill in cancellation reason
+    const reasonInput = screen.getByPlaceholderText(/Enter reason.../i);
+    fireEvent.change(reasonInput, { target: { value: "Medical emergency" } });
 
-    // Click delete button
-    const deleteButton = screen.getByRole("button", { name: /Cancel Session/i });
+    // Click cancel selected sessions button
+    const deleteButton = screen.getByRole("button", { name: /Cancel Selected Sessions/i });
     
-    vi.mocked(cancelClinicSession).mockResolvedValue({ status: "success" });
+    vi.mocked(cancelSessionsOnDate).mockResolvedValue({ cancelledSessions: 1, cancelledAppointments: 0 });
 
     await act(async () => {
       fireEvent.click(deleteButton);
     });
 
     expect(mockConfirm).toHaveBeenCalled();
-    expect(cancelClinicSession).toHaveBeenCalledWith("slot-1");
-
-    await waitFor(() => {
-      expect(screen.getByText(/Clinic session cancelled successfully./i)).toBeInTheDocument();
-    });
+    expect(cancelSessionsOnDate).toHaveBeenCalled();
   });
 
   describe("Doctor Dashboard - Visits and Consultations", () => {
@@ -357,15 +353,16 @@ describe("Doctor Slots Tab and Functionality", () => {
       // Form fields in consultation panel
       const dxInput = screen.getByLabelText(/Diagnosis/i);
       const medInput = screen.getByPlaceholderText(/Medication Name/i);
-      const dosageInput = screen.getByPlaceholderText(/e.g. 500mg/i);
-      const freqInput = screen.getByPlaceholderText(/e.g. Twice daily/i);
+      const selects = screen.getAllByRole("combobox");
+      const dosageSelect = selects[0];
+      const freqSelect = selects[1];
       const durInput = screen.getByPlaceholderText(/e.g. 7 days/i);
       const submitBtn = screen.getByRole("button", { name: /Complete & Save Consultation/i });
 
       fireEvent.change(dxInput, { target: { value: "Influenza A" } });
       fireEvent.change(medInput, { target: { value: "Tamiflu" } });
-      fireEvent.change(dosageInput, { target: { value: "75mg" } });
-      fireEvent.change(freqInput, { target: { value: "Once daily" } });
+      fireEvent.change(dosageSelect, { target: { value: "500mg" } });
+      fireEvent.change(freqSelect, { target: { value: "Once daily" } });
       fireEvent.change(durInput, { target: { value: "5 days" } });
 
       await act(async () => {
@@ -376,7 +373,7 @@ describe("Doctor Slots Tab and Functionality", () => {
         expect(completeConsultation).toHaveBeenCalledWith(
           "slot-888",
           "Influenza A",
-          [{ m: "Tamiflu", d: "75mg", f: "Once daily", t: "5 days" }]
+          [{ m: "Tamiflu", d: "500mg", f: "Once daily", t: "5 days" }]
         );
       });
     });

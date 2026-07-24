@@ -136,6 +136,10 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
     setAdminSlotEndTime,
     adminSlotDuration,
     setAdminSlotDuration,
+    adminSlotRepeat,
+    setAdminSlotRepeat,
+    adminSlotRepeatUntil,
+    setAdminSlotRepeatUntil,
     handleCreateAdminSlot,
   } = admin;
 
@@ -1190,6 +1194,40 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                   />
                 </div>
               </div>
+
+              {!editingSlot && (
+                <div className="space-y-4 pt-2 border-t border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="a-slot-repeat"
+                      type="checkbox"
+                      checked={adminSlotRepeat}
+                      onChange={(e) => setAdminSlotRepeat(e.target.checked)}
+                      className="rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
+                    />
+                    <Label htmlFor="a-slot-repeat" className="text-xs font-bold cursor-pointer">
+                      Repeat Session Weekly
+                    </Label>
+                  </div>
+
+                  {adminSlotRepeat && (
+                    <div className="space-y-1.5 animate-fade-in">
+                      <Label htmlFor="a-slot-repeat-until" className="text-xs font-bold">
+                        Repeat Weekly Until Date
+                      </Label>
+                      <Input
+                        id="a-slot-repeat-until"
+                        type="date"
+                        min={adminSlotDate || getLocalDateString()}
+                        required
+                        value={adminSlotRepeatUntil}
+                        onChange={(e) => setAdminSlotRepeatUntil(e.target.value)}
+                        className="rounded-xl border-slate-200 text-xs"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {(() => {
                 const startParts = adminSlotTime.split(":").map(Number);

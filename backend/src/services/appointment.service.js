@@ -55,7 +55,7 @@ class AppointmentService {
    */
   async createClinicSession(sessionData) {
     try {
-      const { doctor, clinic, date, startTime, endTime, appointmentDuration } = sessionData;
+      const { doctor, clinic, date, startTime, endTime, appointmentDuration, repeatWeeklyUntil } = sessionData;
 
       // Validate doctor exists and is active
       const doctorDoc = await Doctor.findById(doctor);
@@ -88,31 +88,69 @@ class AppointmentService {
         );
       }
 
-      // Check for overlapping sessions
-      const overlappingSession = await ClinicSession.findOne({
-        doctor,
-        date: new Date(date),
-        startTime,
-      });
+      let currentDate = new Date(date);
+      const untilDate = repeatWeeklyUntil ? new Date(repeatWeeklyUntil) : currentDate;
 
-      if (overlappingSession) {
+      const createdSessions = [];
+      const skippedDates = [];
+
+      while (currentDate <= untilDate) {
+        const dayStart = new Date(currentDate);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(currentDate);
+        dayEnd.setHours(23, 59, 59, 999);
+
+        // Check for overlapping sessions
+        const overlappingSession = await ClinicSession.findOne({
+          doctor,
+          date: { $gte: dayStart, $lte: dayEnd },
+          startTime,
+          status: { $ne: "Cancelled" },
+        });
+
+        if (overlappingSession) {
+          if (!repeatWeeklyUntil) {
+            throw new ApiError(
+              "Conflict: Doctor already has a session starting at this time on this date.",
+              409
+            );
+          } else {
+            skippedDates.push(new Date(currentDate).toISOString().split("T")[0]);
+          }
+        } else {
+          const session = await ClinicSession.create({
+            doctor,
+            clinic,
+            date: new Date(currentDate),
+            startTime,
+            endTime,
+            appointmentDuration: duration,
+            status: "Open"
+          });
+          createdSessions.push(session);
+        }
+
+        // Advance by 7 days
+        currentDate.setDate(currentDate.getDate() + 7);
+      }
+
+      if (createdSessions.length === 0 && skippedDates.length > 0) {
         throw new ApiError(
-          "Conflict: Doctor already has a session starting at this time on this date.",
+          `Conflict: All scheduled slots on these dates overlap with existing sessions: ${skippedDates.join(", ")}`,
           409
         );
       }
 
-      const session = await ClinicSession.create({
-        doctor,
-        clinic,
-        date: new Date(date),
-        startTime,
-        endTime,
-        appointmentDuration: appointmentDuration || 30,
-        status: "Open"
-      });
+      const firstSession = createdSessions[0] || null;
+      if (repeatWeeklyUntil && firstSession) {
+        firstSession._doc = {
+          ...firstSession.toObject(),
+          createdSessionsCount: createdSessions.length,
+          skippedDates,
+        };
+      }
 
-      return session;
+      return firstSession;
     } catch (error) {
       if (error instanceof ApiError) throw error;
       throw new ApiError("Failed to create clinic session", 500);
@@ -161,8 +199,8 @@ class AppointmentService {
       // 5. Determine occupied slot indexes
       const occupiedIndexes = new Set(bookedAppointments.map((app) => app.slotIndex));
 
-      // 6. Find the first available slot index
-      const availableSlot = allSlots.find((slot) => !occupiedIndexes.has(slot.slotIndex));
+      // 6. Find the first available slot index that is not reserved for emergency
+      const availableSlot = allSlots.find((slot) => !occupiedIndexes.has(slot.slotIndex) && slot.type !== "emergency");
 
       if (!availableSlot) {
         throw new ApiError("Session Full", 400);
@@ -184,6 +222,7 @@ class AppointmentService {
         appointmentTime: availableSlot.appointmentTime,
         status: "Scheduled",
         notes: notes,
+        type: availableSlot.type || "consultation",
       });
 
       return await appointment.populate([

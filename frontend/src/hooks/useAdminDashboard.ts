@@ -55,6 +55,8 @@ export function useAdminDashboard() {
   const [adminSlotTime, setAdminSlotTime] = useState("08:00");
   const [adminSlotEndTime, setAdminSlotEndTime] = useState("12:00");
   const [adminSlotDuration, setAdminSlotDuration] = useState(15);
+  const [adminSlotRepeat, setAdminSlotRepeat] = useState(false);
+  const [adminSlotRepeatUntil, setAdminSlotRepeatUntil] = useState("");
   const [adminTodaySlotsOpen, setAdminTodaySlotsOpen] = useState(true);
   const [adminUpcomingSlotsOpen, setAdminUpcomingSlotsOpen] = useState(true);
   const [adminPastSlotsOpen, setAdminPastSlotsOpen] = useState(false);
@@ -280,6 +282,8 @@ export function useAdminDashboard() {
       setAdminSlotTime("08:00");
       setAdminSlotEndTime("12:00");
       setAdminSlotDuration(30);
+      setAdminSlotRepeat(false);
+      setAdminSlotRepeatUntil("");
       queryClient.invalidateQueries({ queryKey: ["adminFilteredSlots"] });
       queryClient.invalidateQueries({ queryKey: ["adminAppointments"] });
       queryClient.invalidateQueries({ queryKey: ["doctorAppointments"] });
@@ -322,6 +326,7 @@ export function useAdminDashboard() {
           startTime: adminSlotTime,
           endTime: adminSlotEndTime,
           appointmentDuration: adminSlotDuration,
+          repeatWeeklyUntil: adminSlotRepeat ? adminSlotRepeatUntil : undefined,
         },
       });
     }
@@ -948,6 +953,10 @@ export function useAdminDashboard() {
     setAdminSlotEndTime,
     adminSlotDuration,
     setAdminSlotDuration,
+    adminSlotRepeat,
+    setAdminSlotRepeat,
+    adminSlotRepeatUntil,
+    setAdminSlotRepeatUntil,
     handleCreateAdminSlot,
     handleDeleteAdminSlot,
     slotsCancelDate,

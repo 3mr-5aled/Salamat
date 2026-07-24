@@ -745,6 +745,14 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                                       >
                                         Past Slot
                                       </Button>
+                                    ) : slot.type === "emergency" ? (
+                                      <Button
+                                        size="sm"
+                                        disabled
+                                        className="w-full bg-red-50 text-red-500 rounded-xl py-1.5 text-xs font-semibold border border-red-200 cursor-not-allowed"
+                                      >
+                                        Emergency Only
+                                      </Button>
                                     ) : !isFull ? (
                                       <Button
                                         size="sm"

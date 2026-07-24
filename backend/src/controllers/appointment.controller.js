@@ -12,7 +12,7 @@ const asyncHandler = require("express-async-handler");
 // @access  Private (Doctor / Admin)
 exports.createClinicSessionController = async (req, res, next) => {
   try {
-    const { doctor, clinic, date, startTime, endTime, appointmentDuration } = req.body;
+    const { doctor, clinic, date, startTime, endTime, appointmentDuration, repeatWeeklyUntil } = req.body;
     // Map input fields if doctorId/clinicId were passed instead
     const doctorId = doctor || req.body.doctorId;
     const clinicId = clinic || req.body.clinicId;
@@ -24,6 +24,7 @@ exports.createClinicSessionController = async (req, res, next) => {
       startTime,
       endTime,
       appointmentDuration,
+      repeatWeeklyUntil,
     });
 
     res.status(201).json({
@@ -237,7 +238,7 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
             MaxNumberOfPatients: 1,
             patient: patientArray,
             notes: shouldRedact ? "" : (booking.notes || ""),
-            type: "consultation",
+            type: booking.type || slot.type || "consultation",
             session: session,
           };
         } else {
@@ -254,7 +255,7 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
             NumberOfPatients: 0,
             MaxNumberOfPatients: 1,
             patient: [],
-            type: "consultation",
+            type: slot.type || "consultation",
             session: session,
           };
         }

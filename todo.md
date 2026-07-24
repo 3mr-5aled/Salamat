@@ -32,11 +32,11 @@
 - [x] show doctor default schedule like (Fri 9:00 PM to 12:00 AM)
 - [x] don't show past slots
 
-# [ ] leave 30 min for emergency on creating slots
+# [x] leave 30 min for emergency on creating slots
 
 - [x] in the seed add all patient info like phone number and emergency and date of birth
 
-- [ ] in create slots (repeat weekly to specific date)
+- [x] in create slots (repeat weekly to specific date)
 
 # General
 
@@ -49,3 +49,18 @@
 - [ ] potential UI enhancements
 - [ ] potential UX enhancements
 - [ ] change browser default confirmation modal
+
+# Bugs
+
+## In doctor portal
+
+### Consultation Hours tab
+
+- date picker is hidden in overflow
+- rest of the day option os for today only
+
+## In patient tab
+
+### Book an appointment tab
+
+- today and tomorrow doesn't' filter slots (if there isn't slots for today or tomorrow it will also show upcoming which isn't right for the filter)

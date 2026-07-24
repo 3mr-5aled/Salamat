@@ -97,6 +97,18 @@ const patientSchema = new mongoose.Schema(
   }
 );
 
+// Populate user details automatically on find
+patientSchema.pre(/^find/, function (next) {
+  this.populate({ path: "user", select: "name email phone role" });
+  next();
+});
+
+// Virtual property to delegate to user document
+patientSchema.virtual("email").get(function () {
+  return this.user ? this.user.email : undefined;
+});
+
+
 patientSchema.post("init", (doc) => {
   setImageURL(doc, "patients", "profileImg");
 });

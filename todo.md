@@ -13,13 +13,13 @@
 
 ## in overview
 
-- [ ] make practice hours can be changed by the admin and it is shown for the doctor
+- [x] make practice hours can be changed by the admin and it is shown for the doctor
 
 ## in patient visits tab
 
-- [ ] add print to the consultation record for the doctor as well as in the patient view
-- [ ] on entering consultation make dosage and frequency have default select done menu and for custom it can be written manually
-- [ ] show patient details in the patient visits
+- [x] add print to the consultation record for the doctor as well as in the patient view
+- [x] on entering consultation make dosage and frequency have default select done menu and for custom it can be written manually
+- [x] show patient details in the patient visits
 
 ## On consultation Hours
 
@@ -35,6 +35,8 @@
 # [ ] leave 30 min for emergency on creating slots
 
 - [x] in the seed add all patient info like phone number and emergency and date of birth
+
+- [ ] in create slots (repeat weekly to specific date)
 
 # General
 

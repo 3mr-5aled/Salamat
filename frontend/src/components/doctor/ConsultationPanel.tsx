@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ClipboardList, Heart, Plus, Trash, Check } from "lucide-react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -43,6 +43,9 @@ export const ConsultationPanel: React.FC<ConsultationPanelProps> = ({
   onClose,
 }) => {
   const isOpen = Boolean(consultingSlot && consultingPatient);
+  const [customDosageIndices, setCustomDosageIndices] = useState<Record<number, boolean>>({});
+  const [customFreqIndices, setCustomFreqIndices] = useState<Record<number, boolean>>({});
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -158,27 +161,97 @@ export const ConsultationPanel: React.FC<ConsultationPanelProps> = ({
                     <Label className="text-[10px] font-bold text-[#64748B] uppercase">
                       Dosage
                     </Label>
-                    <Input
-                      placeholder="e.g. 500mg"
-                      value={rxLine.dosage}
-                      onChange={(e) =>
-                        handlePrescriptionChange(idx, "dosage", e.target.value)
-                      }
-                      className="rounded-lg border-[#E2E8F0] bg-white focus:border-[#2563EB] text-xs py-1"
-                    />
+                    {(() => {
+                      const DOSAGE_OPTIONS = ["250mg", "500mg", "1g", "5mg", "10mg", "25mg", "50mg", "100mg"];
+                      const isCustom = customDosageIndices[idx] || (rxLine.dosage && !DOSAGE_OPTIONS.includes(rxLine.dosage));
+                      return (
+                        <>
+                          <select
+                            value={isCustom ? "Custom..." : rxLine.dosage}
+                            onChange={(e) => {
+                              if (e.target.value === "Custom...") {
+                                setCustomDosageIndices({ ...customDosageIndices, [idx]: true });
+                                handlePrescriptionChange(idx, "dosage", "");
+                              } else {
+                                setCustomDosageIndices({ ...customDosageIndices, [idx]: false });
+                                handlePrescriptionChange(idx, "dosage", e.target.value);
+                              }
+                            }}
+                            className="w-full rounded-lg border border-[#E2E8F0] bg-white px-2 py-1.5 text-xs focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]/25"
+                          >
+                            <option value="">Select...</option>
+                            {DOSAGE_OPTIONS.map((o) => (
+                              <option key={o} value={o}>
+                                {o}
+                              </option>
+                            ))}
+                            <option value="Custom...">Custom...</option>
+                          </select>
+                          {isCustom && (
+                            <Input
+                              placeholder="Custom dosage (e.g. 750mg)"
+                              value={rxLine.dosage}
+                              onChange={(e) =>
+                                handlePrescriptionChange(idx, "dosage", e.target.value)
+                              }
+                              className="rounded-lg border-[#E2E8F0] bg-white focus:border-[#2563EB] text-xs py-1 mt-1"
+                            />
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-[#64748B] uppercase">
                       Frequency
                     </Label>
-                    <Input
-                      placeholder="e.g. Twice daily"
-                      value={rxLine.frequency}
-                      onChange={(e) =>
-                        handlePrescriptionChange(idx, "frequency", e.target.value)
-                      }
-                      className="rounded-lg border-[#E2E8F0] bg-white focus:border-[#2563EB] text-xs py-1"
-                    />
+                    {(() => {
+                      const FREQ_OPTIONS = [
+                        "Once daily",
+                        "Twice daily",
+                        "Three times daily",
+                        "Four times daily",
+                        "Every 8 hours",
+                        "Every 12 hours",
+                        "As needed (PRN)",
+                      ];
+                      const isCustomFreq = customFreqIndices[idx] || (rxLine.frequency && !FREQ_OPTIONS.includes(rxLine.frequency));
+                      return (
+                        <>
+                          <select
+                            value={isCustomFreq ? "Custom..." : rxLine.frequency}
+                            onChange={(e) => {
+                              if (e.target.value === "Custom...") {
+                                setCustomFreqIndices({ ...customFreqIndices, [idx]: true });
+                                handlePrescriptionChange(idx, "frequency", "");
+                              } else {
+                                setCustomFreqIndices({ ...customFreqIndices, [idx]: false });
+                                handlePrescriptionChange(idx, "frequency", e.target.value);
+                              }
+                            }}
+                            className="w-full rounded-lg border border-[#E2E8F0] bg-white px-2 py-1.5 text-xs focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]/25"
+                          >
+                            <option value="">Select...</option>
+                            {FREQ_OPTIONS.map((o) => (
+                              <option key={o} value={o}>
+                                {o}
+                              </option>
+                            ))}
+                            <option value="Custom...">Custom...</option>
+                          </select>
+                          {isCustomFreq && (
+                            <Input
+                              placeholder="Custom frequency"
+                              value={rxLine.frequency}
+                              onChange={(e) =>
+                                handlePrescriptionChange(idx, "frequency", e.target.value)
+                              }
+                              className="rounded-lg border-[#E2E8F0] bg-white focus:border-[#2563EB] text-xs py-1 mt-1"
+                            />
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                   <div className="space-y-1">
                     <Label className="text-[10px] font-bold text-[#64748B] uppercase">

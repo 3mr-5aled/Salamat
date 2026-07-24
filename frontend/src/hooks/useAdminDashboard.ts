@@ -100,6 +100,8 @@ export function useAdminDashboard() {
   const [docGender, setDocGender] = useState("male");
   const [docDob, setDocDob] = useState("");
   const [docClinic, setDocClinic] = useState("");
+  const [docAvailability, setDocAvailability] = useState<{ dayOfWeek: string; startTime: string; endTime: string }[]>([]);
+
 
   // Add Patient Modal state
   const [patientModalOpen, setPatientModalOpen] = useState(false);
@@ -450,6 +452,8 @@ export function useAdminDashboard() {
     if (docClinic) {
       payload.clinic = docClinic;
     }
+    payload.availability = docAvailability;
+
 
     await saveDoctorMutation.mutateAsync({
       isEdit: !!editingDoctor,
@@ -742,6 +746,7 @@ export function useAdminDashboard() {
     setDocGender("male");
     setDocDob("");
     setDocClinic("");
+    setDocAvailability([]);
     setDoctorModalOpen(true);
   };
 
@@ -759,8 +764,10 @@ export function useAdminDashboard() {
         : ""
     );
     setDocClinic(doc.clinic?._id || doc.clinic || "");
+    setDocAvailability(doc.availability || []);
     setDoctorModalOpen(true);
   };
+
 
   const handleOpenAddPatient = () => {
     setEditingPatient(null);
@@ -902,9 +909,12 @@ export function useAdminDashboard() {
     setDocDob,
     docClinic,
     setDocClinic,
+    docAvailability,
+    setDocAvailability,
     handleOpenAddDoctor,
     handleOpenEditDoctor,
     handleCreateDoctor,
+
 
     patientModalOpen,
     setPatientModalOpen,

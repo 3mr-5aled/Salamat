@@ -102,9 +102,42 @@ exports.createPatient = asyncHandler(async (req, res, next) => {
 });
 
 // @desc    Update a patient
-// @route   PUT /api/patients/:id
-// @access  Public
-exports.updatePatient = factory.updateOne(Patient);
+// @route   PATCH /api/patients/:id
+exports.updatePatient = asyncHandler(async (req, res, next) => {
+  const patient = await Patient.findById(req.params.id);
+  if (!patient) {
+    return next(new ApiError(`No patient for this id ${req.params.id}`, 404));
+  }
+
+  // Update associated user if user fields are updated
+  const userUpdates = {};
+  if (req.body.fullName) userUpdates.name = req.body.fullName;
+  if (req.body.email) userUpdates.email = req.body.email;
+  if (req.body.phone) {
+    userUpdates.phone = req.body.phone.replace(/^(\+2|002)/, "").replace(/\s/g, "");
+  }
+  if (req.body.password) userUpdates.password = req.body.password;
+
+  if (Object.keys(userUpdates).length > 0 && patient.user) {
+    const userDoc = await User.findById(patient.user);
+    if (userDoc) {
+      Object.assign(userDoc, userUpdates);
+      await userDoc.save();
+    }
+  }
+
+  const updatedPatient = await Patient.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (updatedPatient) {
+    await updatedPatient.save();
+  }
+
+  res.status(200).json({ data: updatedPatient });
+});
+
 
 // @desc    Delete a patient
 // @route   DELETE /api/patients/:id

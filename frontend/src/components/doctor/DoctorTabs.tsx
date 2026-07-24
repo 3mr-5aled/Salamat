@@ -11,12 +11,15 @@ import {
   Search,
   User,
   Check,
+  Printer,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import MedicalNotesDisplay from "../MedicalNotesDisplay";
 import { formatTimeInterval, getAge } from "../../lib/formatters";
+import { buildConsultationPrintHTML } from "../../lib/printHelper";
+
 import { useProfile } from "../../hooks/useProfile";
 import { DoctorProfileForm } from "../profile/DoctorProfileForm";
 import type { useDoctorDashboard } from "../../hooks/useDoctorDashboard";
@@ -54,6 +57,7 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
     handleRejectRegistration,
     handleStartConsultation,
     doctorProfileId,
+    doctorProfile,
     setActiveTab,
   } = doctor as any;
 
@@ -104,8 +108,18 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
                 <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider">
                   Practice Hours
                 </span>
-                <h3 className="text-3xl font-bold text-[#0F172A]">08:00 - 17:00</h3>
-                <p className="text-[11px] text-[#64748B]">Mon - Fri Availability</p>
+                <div className="space-y-0.5">
+                  {doctorProfile?.availability && doctorProfile.availability.length > 0 ? (
+                    doctorProfile.availability.map((av: any, i: number) => (
+                      <span key={i} className="block text-[11px] font-bold text-[#0F172A]">
+                        {av.dayOfWeek.slice(0, 3)}: {av.startTime} - {av.endTime}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm font-bold text-slate-400 italic">No set schedule</span>
+                  )}
+                </div>
+                <p className="text-[10px] text-[#64748B] pt-0.5">Configured availability</p>
               </div>
             </div>
 
@@ -242,10 +256,28 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
                             </span>
                           </div>
 
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#64748B]">
-                            {pDetails.email && <span>Email: {pDetails.email}</span>}
-                            {pDetails.phone && <span>Phone: {pDetails.phone}</span>}
+                          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-[#64748B] bg-slate-50/50 p-3 rounded-xl border border-slate-100/80 mt-1.5">
+                            {pDetails.email && <span><strong>Email:</strong> {pDetails.email}</span>}
+                            {pDetails.phone && <span><strong>Phone:</strong> {pDetails.phone}</span>}
+                            {pDetails.gender && <span className="capitalize"><strong>Gender:</strong> {pDetails.gender}</span>}
+                            {pDetails.dateOfBirth && (
+                              <span>
+                                <strong>Age:</strong> {getAge(pDetails.dateOfBirth)} Yrs ({new Date(pDetails.dateOfBirth).toLocaleDateString()})
+                              </span>
+                            )}
+                            {pDetails.bloodType && <span><strong>Blood Type:</strong> {pDetails.bloodType}</span>}
+                            {pDetails.chronicDiseases && pDetails.chronicDiseases.length > 0 && (
+                              <span>
+                                <strong>Chronic Diseases:</strong> {Array.isArray(pDetails.chronicDiseases) ? pDetails.chronicDiseases.join(", ") : pDetails.chronicDiseases}
+                              </span>
+                            )}
+                            {pDetails.emergencyContact?.name && (
+                              <span>
+                                <strong>Emergency Contact:</strong> {pDetails.emergencyContact.name} ({pDetails.emergencyContact.relation || "Contact"}) - {pDetails.emergencyContact.phone}
+                              </span>
+                            )}
                           </div>
+
 
                           {reg.symptoms && (
                             <p className="text-xs text-[#64748B] bg-slate-50 p-2.5 rounded-xl border border-slate-100 mt-1">
@@ -254,9 +286,33 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
                             </p>
                           )}
 
-                          {slot.status === "Completed" && slot.notes && (
-                            <div className="mt-2">
+                           {slot.status === "Completed" && slot.notes && (
+                            <div className="mt-2 space-y-2">
                               <MedicalNotesDisplay notes={slot.notes} />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const win = window.open("", "_blank", "width=800,height=600");
+                                  if (!win) return;
+                                  const docNameStr = user?.name || slot.doctor?.fullName || "Doctor";
+                                  const clinicNameStr = slot.clinic?.name || "";
+                                  win.document.write(
+                                    buildConsultationPrintHTML({
+                                      patientName: pDetails.fullName,
+                                      date: new Date(slot.date).toLocaleDateString(),
+                                      time: formatTimeInterval(slot.time, slot.duration),
+                                      notes: slot.notes,
+                                      doctorName: docNameStr,
+                                      clinicName: clinicNameStr,
+                                    })
+                                  );
+                                  win.document.close();
+                                }}
+                                className="flex items-center gap-1.5 text-[11px] font-bold text-[#2563EB] hover:text-[#1D4ED8] bg-[#2563EB]/5 hover:bg-[#2563EB]/10 border border-[#2563EB]/10 px-2.5 py-1 rounded-lg cursor-pointer transition-all w-fit"
+                              >
+                                <Printer size={12} />
+                                <span>Print Record</span>
+                              </button>
                             </div>
                           )}
                         </div>

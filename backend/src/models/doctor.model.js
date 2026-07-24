@@ -55,8 +55,28 @@ const doctorSchema = new mongoose.Schema(
     passwordResetToken: String,
     passwordResetExpires: Date,
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
 );
+
+// Populate user details automatically on find
+doctorSchema.pre(/^find/, function (next) {
+  this.populate({ path: "user", select: "name email phone role" });
+  next();
+});
+
+// Virtual properties to delegate to user document
+doctorSchema.virtual("email").get(function () {
+  return this.user ? this.user.email : undefined;
+});
+
+doctorSchema.virtual("phone").get(function () {
+  return this.user ? this.user.phone : undefined;
+});
+
 
 
 // findOne, findAll and update

@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { DatePicker } from "../ui/date-picker";
 import { TimeSelectPair } from "../shared/TimeSelectPair";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Plus, Trash2 } from "lucide-react";
 import { getLocalDateString } from "../../lib/formatters";
 import {
   Dialog,
@@ -100,7 +100,10 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
     setDocDob,
     docClinic,
     setDocClinic,
+    docAvailability,
+    setDocAvailability,
     handleCreateDoctor,
+
 
     // Add Patient modal
     patientModalOpen,
@@ -883,6 +886,78 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                     value={docDob}
                     onChange={(e) => setDocDob(e.target.value)}
                   />
+                </div>
+              </div>
+              <div className="space-y-2 border-t border-slate-100 pt-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold">Practice Hours (Availability)</Label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setDocAvailability([
+                        ...docAvailability,
+                        { dayOfWeek: "Monday", startTime: "09:00", endTime: "17:00" },
+                      ])
+                    }
+                    className="text-[#2563EB] hover:text-[#1D4ED8] text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus size={12} />
+                    <span>Add day</span>
+                  </button>
+                </div>
+
+                {docAvailability.length === 0 && (
+                  <p className="text-[11px] text-slate-400 italic">No practice hours set yet.</p>
+                )}
+
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {docAvailability.map((av: any, idx: number) => (
+                    <div key={idx} className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                      <select
+                        value={av.dayOfWeek}
+                        onChange={(e) => {
+                          const next = [...docAvailability];
+                          next[idx] = { ...next[idx], dayOfWeek: e.target.value };
+                          setDocAvailability(next);
+                        }}
+                        className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs focus:outline-none flex-1"
+                      >
+                        {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((d) => (
+                          <option key={d} value={d}>
+                            {d}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="time"
+                        value={av.startTime}
+                        onChange={(e) => {
+                          const next = [...docAvailability];
+                          next[idx] = { ...next[idx], startTime: e.target.value };
+                          setDocAvailability(next);
+                        }}
+                        className="rounded-lg border border-slate-200 px-2 py-1 text-xs focus:outline-none w-20 bg-white"
+                      />
+                      <span className="text-xs text-slate-400">to</span>
+                      <input
+                        type="time"
+                        value={av.endTime}
+                        onChange={(e) => {
+                          const next = [...docAvailability];
+                          next[idx] = { ...next[idx], endTime: e.target.value };
+                          setDocAvailability(next);
+                        }}
+                        className="rounded-lg border border-slate-200 px-2 py-1 text-xs focus:outline-none w-20 bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setDocAvailability(docAvailability.filter((_, i) => i !== idx))}
+                        className="text-red-500 hover:text-red-700 cursor-pointer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

@@ -395,7 +395,9 @@ export function useDoctorDashboard() {
     activeTab,
     setActiveTab,
     doctorProfileId,
+    doctorProfile,
     doctorAppointments,
+
     loadingAppointments,
     actionError,
     setActionError,

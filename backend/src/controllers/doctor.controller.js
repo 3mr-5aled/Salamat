@@ -110,7 +110,47 @@ exports.createDoctor = asyncHandler(async (req, res, next) => {
 // @desc    Update a doctor
 // @route   PUT /api/doctors/:id
 // @access  Public
-exports.updateDoctor = factory.updateOne(Doctor);
+exports.updateDoctor = asyncHandler(async (req, res, next) => {
+  const doctor = await Doctor.findById(req.params.id);
+  if (!doctor) {
+    return next(new ApiError(`No doctor for this id ${req.params.id}`, 404));
+  }
+
+  // Update associated user if user fields are updated
+  const userUpdates = {};
+  if (req.body.fullName) userUpdates.name = req.body.fullName;
+  if (req.body.email) userUpdates.email = req.body.email;
+  if (req.body.phone) {
+    userUpdates.phone = req.body.phone.replace(/^(\+2|002)/, "").replace(/\s/g, "");
+  }
+  if (req.body.password) userUpdates.password = req.body.password;
+
+  if (Object.keys(userUpdates).length > 0 && doctor.user) {
+    const userDoc = await User.findById(doctor.user);
+    if (userDoc) {
+      Object.assign(userDoc, userUpdates);
+      await userDoc.save();
+    }
+  }
+
+  // Update doctor profile
+  if (req.body.fullName) {
+    req.body.slug = slugify(req.body.fullName, { lower: true });
+  }
+
+  const updatedDoctor = await Doctor.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  // Trigger save middleware/init post events if needed
+  if (updatedDoctor) {
+    await updatedDoctor.save();
+  }
+
+  res.status(200).json({ data: updatedDoctor });
+});
+
 
 // @desc    Delete a doctor
 // @route   DELETE /api/doctors/:id

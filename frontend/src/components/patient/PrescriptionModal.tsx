@@ -9,6 +9,8 @@ import {
   DialogFooter,
 } from "../ui/dialog";
 import { Heart, FileText } from "lucide-react";
+import { buildConsultationPrintHTML } from "../../lib/printHelper";
+
 
 interface PrescriptionModalProps {
   viewingPrescription: any | null;
@@ -36,60 +38,27 @@ export const PrescriptionModal: React.FC<PrescriptionModalProps> = ({
   }
 
   const handlePrint = () => {
-    const printContents = document.getElementById("prescription-print-content")?.innerHTML;
-    if (printContents) {
-      const printWindow = window.open("", "_blank");
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Prescription Card</title>
-              <style>
-                body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; color: #0F172A; }
-                .text-center { text-align: center; }
-                .flex { display: flex; }
-                .justify-between { justify-content: space-between; }
-                .grid { display: grid; }
-                .grid-cols-2 { display: grid; grid-template-columns: 1fr 1fr; }
-                .gap-3 { gap: 12px; }
-                .border-b { border-bottom: 1px solid #E2E8F0; }
-                .border-t { border-top: 1px solid #E2E8F0; }
-                .pb-5 { padding-bottom: 20px; }
-                .pt-6 { padding-top: 24px; }
-                .space-y-6 > * + * { margin-top: 24px; }
-                .space-y-3 > * + * { margin-top: 12px; }
-                .bg-slate-50 { background-color: #F8FAFC; }
-                .p-4 { padding: 16px; }
-                .rounded-2xl { border-radius: 16px; }
-                .border { border: 1px solid #E2E8F0; }
-                .text-xs { font-size: 12px; }
-                .text-sm { font-size: 14px; }
-                .text-xl { font-size: 20px; }
-                .font-bold { font-weight: 700; }
-                .uppercase { text-transform: uppercase; }
-                .text-right { text-align: right; }
-                .text-slate-400 { color: #94A3B8; }
-                .text-slate-700 { color: #334155; }
-                .text-slate-800 { color: #1E293B; }
-                .text-blue-600 { color: #2563EB; }
-                table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-                th, td { padding: 10px 12px; border-bottom: 1px solid #F1F5F9; text-align: left; font-size: 12px; }
-                th { background-color: #F8FAFC; font-weight: bold; }
-              </style>
-            </head>
-            <body>
-              <div class="space-y-6">${printContents}</div>
-              <script>
-                window.onload = function() {
-                  window.print();
-                  setTimeout(function() { window.close(); }, 500);
-                };
-              </script>
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-      }
+    if (viewingPrescription) {
+      const win = window.open("", "_blank", "width=800,height=600");
+      if (!win) return;
+      
+      const docNameStr = viewingPrescription.doctor?.fullName || "Doctor Specialist";
+      const clinicNameStr = viewingPrescription.clinic?.name || "";
+      const timeStr = viewingPrescription.time 
+        ? `${viewingPrescription.time} (duration: ${viewingPrescription.duration || 15}m)` 
+        : "N/A";
+        
+      win.document.write(
+        buildConsultationPrintHTML({
+          patientName: patientName,
+          date: new Date(viewingPrescription.date).toLocaleDateString(),
+          time: timeStr,
+          notes: viewingPrescription.notes,
+          doctorName: docNameStr,
+          clinicName: clinicNameStr,
+        })
+      );
+      win.document.close();
     }
   };
 

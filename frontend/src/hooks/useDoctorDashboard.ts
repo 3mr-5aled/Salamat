@@ -235,18 +235,18 @@ export function useDoctorDashboard() {
     }
   };
 
-  const cancelRestOfDayMutation = useMutation({
-    mutationFn: () => {
-      const today = new Date().toISOString().split("T")[0];
-      return cancelSessionsOnDate(doctorProfileId!, today);
+  const cancelSessionsMutation = useMutation({
+    mutationFn: ({ date, reason, range }: { date: string; reason: string; range: string }) => {
+      return cancelSessionsOnDate(doctorProfileId!, date, reason, range);
     },
     onMutate: () => {
       setActionError(null);
       setActionSuccess(null);
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      const typeStr = variables.range === "rest" ? "remaining today's sessions" : `all sessions on ${variables.date}`;
       setActionSuccess(
-        `Cancelled ${data.cancelledSessions} session(s) and ${data.cancelledAppointments} appointment(s) for the rest of today.`
+        `Cancelled ${data.cancelledSessions} session(s) and ${data.cancelledAppointments} appointment(s) for ${typeStr}.`
       );
       queryClient.invalidateQueries({ queryKey: ["doctorAppointments"] });
     },
@@ -255,17 +255,21 @@ export function useDoctorDashboard() {
     },
   });
 
-  const handleCancelRestOfDay = async () => {
+  const handleCancelSessions = async (date: string, reason: string, range: string) => {
     if (!doctorProfileId) return;
+    if (!reason.trim()) {
+      setActionError("Cancellation reason is required.");
+      return;
+    }
+    const typeText = range === "rest" ? "rest of today" : `the entire day of ${date}`;
     const confirmed = await customConfirm({
-      title: "Cancel Rest of Today",
-      message:
-        "This will cancel all your remaining sessions for today. All pending patient bookings will be cancelled. This cannot be undone.",
-      confirmText: "Yes, Cancel Rest of Today",
+      title: "Cancel Sessions",
+      message: `Are you sure you want to cancel ${typeText}? All pending/approved patient appointments in these sessions will be cancelled automatically. This cannot be undone.`,
+      confirmText: "Yes, Cancel Sessions",
       variant: "danger",
     });
     if (confirmed) {
-      await cancelRestOfDayMutation.mutateAsync();
+      await cancelSessionsMutation.mutateAsync({ date, reason: reason.trim(), range });
     }
   };
 
@@ -440,7 +444,7 @@ export function useDoctorDashboard() {
     handleSaveNote,
     handleContactAdminSubmit,
     handleCancelSlot,
-    handleCancelRestOfDay,
+    handleCancelSessions,
     handleApproveRegistration,
     handleRejectRegistration,
     handleStartConsultation,

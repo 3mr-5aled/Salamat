@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import MedicalNotesDisplay from "../MedicalNotesDisplay";
 import { formatTimeInterval, getAge } from "../../lib/formatters";
@@ -22,6 +23,7 @@ import { buildConsultationPrintHTML } from "../../lib/printHelper";
 
 import { useProfile } from "../../hooks/useProfile";
 import { DoctorProfileForm } from "../profile/DoctorProfileForm";
+import { DatePicker } from "../ui/date-picker";
 import type { useDoctorDashboard } from "../../hooks/useDoctorDashboard";
 
 interface DoctorTabsProps {
@@ -51,8 +53,7 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
     doctorVisitsArchivedOpen,
     setDoctorVisitsArchivedOpen,
     handleSaveNote,
-    handleCancelSlot,
-    handleCancelRestOfDay,
+    handleCancelSessions,
     handleApproveRegistration,
     handleRejectRegistration,
     handleStartConsultation,
@@ -61,11 +62,21 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
     setActiveTab,
   } = doctor as any;
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  const hasTodaySlots = doctorAppointments?.some((s: any) => {
-    const sDateStr = new Date(s.date).toISOString().split("T")[0];
-    return sDateStr === todayStr && s.status !== "Completed" && s.status !== "Cancelled";
-  });
+  const [cancelDate, setCancelDate] = React.useState(new Date().toISOString().split("T")[0]);
+  const [cancelRange, setCancelRange] = React.useState<"rest" | "whole">("rest");
+  const [cancelReason, setCancelReason] = React.useState("");
+
+  const isCancelDateToday = cancelDate === new Date().toISOString().split("T")[0];
+
+  React.useEffect(() => {
+    if (!isCancelDateToday) {
+      setCancelRange("whole");
+    }
+  }, [cancelDate, isCancelDateToday]);
+
+
+
+
 
   return (
     <>
@@ -428,18 +439,69 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
                 View your available clinic hours and slot capacities.
               </p>
             </div>
-            {hasTodaySlots && (
+          </div>
+
+          {/* Cancellation Control Panel */}
+          <Card className="rounded-3xl border border-red-100 bg-red-500/[0.02] shadow-[0_10px_30px_rgba(220,38,38,0.01)] overflow-hidden">
+            <div className="p-6 md:p-8 space-y-6">
+              <div>
+                <h3 className="text-sm font-bold text-[#DC2626] uppercase tracking-wider flex items-center gap-2">
+                  <XCircle size={16} className="text-[#DC2626]" />
+                  <span>Cancel Scheduled Shift / Sessions</span>
+                </h3>
+                <p className="text-xs text-[#64748B] mt-1">
+                  Cancel all remaining sessions for the rest of today, or an entire day of scheduled sessions. Requires a reason.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                <div className="space-y-1.5">
+                  <Label htmlFor="cancel-date" className="text-xs font-bold text-slate-700">Date to Cancel</Label>
+                  <DatePicker
+                    id="cancel-date"
+                    value={cancelDate}
+                    onChange={(e) => setCancelDate(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="cancel-range" className="text-xs font-bold text-slate-700">Cancellation Range</Label>
+                  <select
+                    id="cancel-range"
+                    value={cancelRange}
+                    onChange={(e) => setCancelRange(e.target.value as any)}
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:border-[#2563EB]"
+                  >
+                    {isCancelDateToday && <option value="rest">Rest of the Day</option>}
+                    <option value="whole">Whole Day</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5 sm:col-span-1">
+                  <Label htmlFor="cancel-reason" className="text-xs font-bold text-slate-700">Reason for Cancellation</Label>
+                  <Input
+                    id="cancel-reason"
+                    placeholder="Enter reason..."
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    className="rounded-xl border-slate-200 text-xs py-2 bg-white"
+                  />
+                </div>
+              </div>
+
               <Button
-                size="sm"
-                variant="outline"
-                onClick={handleCancelRestOfDay}
-                className="border-red-500 text-red-500 hover:bg-red-500/5 hover:border-red-600 hover:text-red-600 rounded-xl px-3 py-1.5 text-xs font-semibold cursor-pointer flex items-center gap-1.5 self-start sm:self-center"
+                onClick={() => {
+                  handleCancelSessions(cancelDate, cancelReason, cancelRange);
+                  setCancelReason("");
+                }}
+                disabled={!cancelReason.trim()}
+                className="w-full sm:w-auto px-6 bg-[#DC2626] hover:bg-[#B91C1C] text-white rounded-xl py-2.5 text-xs font-bold shadow-[0_4px_12px_rgba(220,38,38,0.1)] transition-all cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <XCircle size={14} />
-                <span>Cancel Rest of Today</span>
+                <span>Cancel Selected Sessions</span>
               </Button>
-            )}
-          </div>
+            </div>
+          </Card>
 
           {actionError && (
             <div className="bg-red-500/10 border border-red-500/20 text-sm font-medium text-red-500 p-4 rounded-xl">
@@ -459,7 +521,6 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
             </div>
           ) : (() => {
             const renderSlotCard = (slot: any) => {
-              const isSlotPast = slot.appointmentTime ? new Date(slot.appointmentTime) < new Date() : false;
               return (
                 <Card
                   key={slot._id}
@@ -510,18 +571,6 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
                     }`}>
                       {slot.status}
                     </span>
-
-                    {slot.status !== "Completed" && slot.status !== "Cancelled" && !isSlotPast && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleCancelSlot(slot._id)}
-                        className="border-red-500 text-red-500 hover:bg-red-500/5 hover:border-red-600 hover:text-red-600 rounded-xl px-3 py-1.5 text-xs font-semibold cursor-pointer flex items-center gap-1.5"
-                      >
-                        <XCircle size={12} />
-                        <span>Cancel Session</span>
-                      </Button>
-                    )}
                   </div>
                 </Card>
               );

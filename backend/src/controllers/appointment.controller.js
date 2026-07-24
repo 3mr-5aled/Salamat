@@ -386,7 +386,7 @@ exports.adminBookController = async (req, res, next) => {
 // @route   PATCH /api/v1/appointments/cancel-sessions-on-date
 // @access  Private (Doctor / Admin)
 exports.cancelSessionsOnDateController = asyncHandler(async (req, res, next) => {
-  const { doctorId, date } = req.body;
+  const { doctorId, date, reason, range } = req.body;
   if (!doctorId) {
     return next(new ApiError("doctorId is required", 400));
   }
@@ -397,7 +397,9 @@ exports.cancelSessionsOnDateController = asyncHandler(async (req, res, next) => 
   const result = await appointmentService.cancelSessionsOnDate(
     doctorId,
     date,
-    req.user._id
+    req.user._id,
+    reason,
+    range
   );
 
   res.status(200).json({

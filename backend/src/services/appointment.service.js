@@ -334,7 +334,7 @@ class AppointmentService {
    * @param {string} requestedByUserId
    * @returns {{ cancelledSessions: number, cancelledAppointments: number }}
    */
-  async cancelSessionsOnDate(doctorId, date, requestedByUserId) {
+  async cancelSessionsOnDate(doctorId, date, requestedByUserId, reason, range = "rest") {
     try {
       const now = new Date();
 
@@ -366,8 +366,8 @@ class AppointmentService {
         status: { $ne: "Cancelled" },
       });
 
-      // If today -> cancel active/future sessions based on endTime; if future date -> all sessions
-      const targets = isToday
+      // If today and range is "rest" -> cancel active/future sessions based on endTime; otherwise cancel all sessions on the date
+      const targets = (range === "rest" && isToday)
         ? sessions.filter((s) => s.endTime > currentTimeStr)
         : sessions;
 
@@ -382,9 +382,10 @@ class AppointmentService {
 
       const sessionIds = targets.map((s) => s._id);
 
+      const cancelNotes = reason ? `Cancelled by Doctor. Reason: ${reason}` : "Cancelled by Doctor.";
       const apptResult = await Appointment.updateMany(
         { session: { $in: sessionIds }, status: { $ne: "Completed" } },
-        { status: "Cancelled" }
+        { status: "Cancelled", notes: cancelNotes }
       );
 
       await ClinicSession.updateMany(

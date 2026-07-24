@@ -345,11 +345,15 @@ export const cancelClinicSession = async (slotId: string): Promise<unknown> => {
  */
 export const cancelSessionsOnDate = async (
   doctorId: string,
-  date: string
+  date: string,
+  reason?: string,
+  range?: string
 ): Promise<{ cancelledSessions: number; cancelledAppointments: number }> => {
   const response = await api.patch("/appointments/cancel-sessions-on-date", {
     doctorId,
     date,
+    reason,
+    range,
   });
   return response.data?.data;
 };

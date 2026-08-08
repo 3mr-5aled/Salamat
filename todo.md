@@ -41,14 +41,14 @@
 # General
 
 - [x] landing page
-- [ ] error handling
-- [ ] client error friendly message
-- [ ] check for refactor
-- [ ] OWASP check
-- [ ] protected routes
-- [ ] potential UI enhancements
-- [ ] potential UX enhancements
-- [ ] change browser default confirmation modal
+- [x] error handling
+- [x] client error friendly message
+- [x] check for refactor
+- [x] OWASP check
+- [x] protected routes
+- [x] potential UI enhancements
+- [x] potential UX enhancements
+- [x] change browser default confirmation modal
 
 # Bugs
 
@@ -56,11 +56,11 @@
 
 ### Consultation Hours tab
 
-- date picker is hidden in overflow
-- rest of the day option os for today only
+- [x] date picker is hidden in overflow
+- [x] rest of the day option os for today only
 
 ## In patient tab
 
 ### Book an appointment tab
 
-- today and tomorrow doesn't' filter slots (if there isn't slots for today or tomorrow it will also show upcoming which isn't right for the filter)
+- [x] today and tomorrow doesn't' filter slots (if there isn't slots for today or tomorrow it will also show upcoming which isn't right for the filter)

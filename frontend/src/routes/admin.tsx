@@ -17,7 +17,7 @@ export const Route = createRoute({
 function AdminDashboardComponent() {
   const admin = useAdminDashboard();
   const { user, logout, authLoading } = useAuth() as any;
-  const { prompt: customPrompt } = useModal();
+  const { prompt: customPrompt, confirm: customConfirm } = useModal();
 
   if (admin.loading || authLoading) {
     return <LoadingSpinner label="Loading admin dashboard..." fullScreen />;
@@ -107,7 +107,13 @@ function AdminDashboardComponent() {
                   required: true
                 });
                 if (bugDesc) {
-                  alert("Thank you! Your bug report has been submitted to the developers.");
+                  await customConfirm({
+                    title: "Report Submitted",
+                    message: "Thank you! Your bug report has been submitted to the developers.",
+                    confirmText: "OK",
+                    cancelText: "Close",
+                    variant: "primary",
+                  });
                 }
               }}
               className="hover:text-[#2563EB] cursor-pointer transition-colors"

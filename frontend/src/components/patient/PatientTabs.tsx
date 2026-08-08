@@ -542,25 +542,33 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
               <CardContent className="p-6 space-y-6">
                 {/* Step 1: Select Date of Appointment */}
                 {(() => {
+                  const toLocalDateString = (d: Date) => {
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, "0");
+                    const day = String(d.getDate()).padStart(2, "0");
+                    return `${y}-${m}-${day}`;
+                  };
+
                   const uniqueSlotDates: string[] = (() => {
                     const days = [];
                     const now = new Date();
                     for (let i = 0; i < 5; i++) {
-                      const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000);
-                      days.push(d.toISOString().split("T")[0]);
+                      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
+                      days.push(toLocalDateString(d));
                     }
                     return days;
                   })();
 
                   const getDayLabel = (dStr: string) => {
-                    const todayStr = new Date().toISOString().split("T")[0];
-                    const tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000);
-                    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+                    const now = new Date();
+                    const todayStr = toLocalDateString(now);
+                    const tomorrowStr = toLocalDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
 
                     if (dStr === todayStr) return "Today";
                     if (dStr === tomorrowStr) return "Tomorrow";
 
-                    return new Date(dStr + "T00:00:00").toLocaleDateString(undefined, {
+                    const [y, m, day] = dStr.split("-").map(Number);
+                    return new Date(y, m - 1, day).toLocaleDateString(undefined, {
                       month: "short",
                       day: "numeric",
                       weekday: "short",
@@ -613,20 +621,27 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                 {/* Step 2: Choose Preferred Slot */}
                 <div className="space-y-3">
                   <Label className="text-xs font-bold text-[#0F172A] block uppercase tracking-wider">
-                    2. Choose Preferred Slot {slotDateFilter ? `for ${new Date(slotDateFilter).toLocaleDateString()}` : "(All Available Dates)"}
+                    2. Choose Preferred Slot {slotDateFilter ? `for ${slotDateFilter}` : "(All Available Dates)"}
                   </Label>
                   {(() => {
+                    const toLocalDateString = (d: Date) => {
+                      const y = d.getFullYear();
+                      const m = String(d.getMonth() + 1).padStart(2, "0");
+                      const day = String(d.getDate()).padStart(2, "0");
+                      return `${y}-${m}-${day}`;
+                    };
+
                     const now = new Date();
                     const filteredDocSlots = docSlots.filter((slot: any) => {
                       // Don't show past slots
                       const [slotHour, slotMin] = (slot.time || "00:00").split(":").map(Number);
-                      const slotStart = new Date(slot.date);
-                      slotStart.setHours(slotHour, slotMin, 0, 0);
+                      const slotDateObj = new Date(slot.date);
+                      const slotStart = new Date(slotDateObj.getFullYear(), slotDateObj.getMonth(), slotDateObj.getDate(), slotHour, slotMin, 0);
                       if (slotStart < now) {
                         return false;
                       }
                       if (!slotDateFilter) return true;
-                      const dStr = new Date(slot.date).toISOString().split("T")[0];
+                      const dStr = toLocalDateString(slotDateObj);
                       return dStr === slotDateFilter;
                     });
 
@@ -634,7 +649,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                       return (
                         <div className="p-8 bg-slate-50 border border-slate-100 rounded-2xl text-center text-xs text-slate-500 font-medium">
                           {slotDateFilter
-                            ? `No available slots on ${new Date(slotDateFilter).toLocaleDateString()}. Please select another date.`
+                            ? `No available slots on ${slotDateFilter}. Please select another date.`
                             : "No consultation slots available for this doctor."}
                         </div>
                       );

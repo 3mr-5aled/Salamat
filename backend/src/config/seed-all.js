@@ -110,7 +110,7 @@ const seedAll = async () => {
       },
       {
         name: "Dr. Tarek Hegazi",
-        email: "tarek@salamat.com",
+        email: "dr.tarek@salamat.com",
         specialty: "Pediatrics",
         phone: "01501234567",
         gender: "male",
@@ -118,7 +118,7 @@ const seedAll = async () => {
       },
       {
         name: "Dr. Laila Abdel-Rahman",
-        email: "laila@salamat.com",
+        email: "dr.laila@salamat.com",
         specialty: "Orthopedics",
         phone: "01007654321",
         gender: "female",

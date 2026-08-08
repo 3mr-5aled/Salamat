@@ -62,15 +62,25 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
     setActiveTab,
   } = doctor as any;
 
-  const [cancelDate, setCancelDate] = React.useState(new Date().toISOString().split("T")[0]);
+  const getTodayString = () => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
+  const [cancelDate, setCancelDate] = React.useState(getTodayString());
   const [cancelRange, setCancelRange] = React.useState<"rest" | "whole">("rest");
   const [cancelReason, setCancelReason] = React.useState("");
 
-  const isCancelDateToday = cancelDate === new Date().toISOString().split("T")[0];
+  const isCancelDateToday = cancelDate === getTodayString();
 
   React.useEffect(() => {
     if (!isCancelDateToday) {
       setCancelRange("whole");
+    } else {
+      setCancelRange("rest");
     }
   }, [cancelDate, isCancelDateToday]);
 
@@ -442,7 +452,7 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
           </div>
 
           {/* Cancellation Control Panel */}
-          <Card className="rounded-3xl border border-red-100 bg-red-500/[0.02] shadow-[0_10px_30px_rgba(220,38,38,0.01)] overflow-hidden">
+          <Card className="rounded-3xl border border-red-100 bg-red-500/[0.02] shadow-[0_10px_30px_rgba(220,38,38,0.01)] overflow-visible relative z-10">
             <div className="p-6 md:p-8 space-y-6">
               <div>
                 <h3 className="text-sm font-bold text-[#DC2626] uppercase tracking-wider flex items-center gap-2">

@@ -8,6 +8,8 @@ import { Shield, AlertCircle, CheckCircle2 } from "lucide-react";
 import { LoadingSpinner } from "../components/shared/LoadingSpinner";
 import { useModal } from "../contexts/ModalContext";
 
+import { NotificationBell } from "../components/NotificationBell";
+
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app/admin",
@@ -42,6 +44,9 @@ function AdminDashboardComponent() {
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+            </div>
           </div>
 
           {/* Global Status Banner */}
@@ -60,7 +65,7 @@ function AdminDashboardComponent() {
 
           {/* Tab Navigation */}
           <div className="flex gap-1.5 overflow-x-auto bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
-            {(["overview", "clinics", "doctors", "patients", "slots", "messages"] as const).map((tab) => (
+            {(["overview", "approvals", "clinics", "doctors", "patients", "slots", "messages"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => {
@@ -68,13 +73,22 @@ function AdminDashboardComponent() {
                   admin.setActionError(null);
                   admin.setActionSuccess(null);
                 }}
-                className={`px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                   admin.activeTab === tab
                     ? "bg-[#2563EB] text-white shadow-sm"
                     : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
                 }`}
               >
-                {tab === "messages" ? "Doctor Messages" : tab}
+                {tab === "messages" ? "Doctor Messages" : tab === "approvals" ? (
+                  <>
+                    <span>Pending Approvals</span>
+                    {admin.pendingAppointments?.length > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-red-500 text-white font-extrabold">
+                        {admin.pendingAppointments.length}
+                      </span>
+                    )}
+                  </>
+                ) : tab}
               </button>
             ))}
           </div>

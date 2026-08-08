@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createRoute, useNavigate } from "@tanstack/react-router";
 import { rootRoute } from "./__root";
 import { useAuth } from "../contexts/AuthContext";
@@ -21,8 +21,6 @@ import {
   MapPin,
   Mail,
   CalendarRange,
-  Send,
-  Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -37,30 +35,7 @@ function LandingPageComponent() {
   const navigate = useNavigate();
   const { data: analyticsData, isLoading: loadingAnalytics } = useAnalytics();
 
-  // Contact Us Form State
-  const [contactName, setContactName] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactSubject, setContactSubject] = useState("");
-  const [contactMessage, setContactMessage] = useState("");
-  const [isSubmittingContact, setIsSubmittingContact] = useState(false);
-  const [contactSubmitted, setContactSubmitted] = useState(false);
 
-  const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!contactName.trim() || !contactEmail.trim() || !contactMessage.trim()) return;
-    setIsSubmittingContact(true);
-    // Simulate API submission delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmittingContact(false);
-    setContactSubmitted(true);
-    // Reset fields
-    setContactName("");
-    setContactEmail("");
-    setContactSubject("");
-    setContactMessage("");
-    // Clear toast message after 5 seconds
-    setTimeout(() => setContactSubmitted(false), 5000);
-  };
 
   // Redirect authenticated users to their app workspace automatically
   useEffect(() => {
@@ -575,7 +550,7 @@ function LandingPageComponent() {
               Contact Hospital Support
             </h2>
             <p className="text-sm text-[#64748B] font-medium leading-relaxed">
-              Have questions regarding scheduling, services, or profile details? Send a message to our administrative panel.
+              Reach our support team instantly via WhatsApp, Facebook, or our direct hotline. We're available to help.
             </p>
           </div>
 
@@ -658,99 +633,71 @@ function LandingPageComponent() {
               </div>
             </div>
 
-            {/* Contact Form */}
-            <div className="lg:col-span-7 bg-[#F8FAFC]/50 border border-slate-100 rounded-3xl p-8 shadow-sm">
-              <h3 className="text-lg font-bold text-[#0F172A] mb-6">Send Administrative Request</h3>
-              <form onSubmit={handleContactSubmit} className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label htmlFor="contact-name" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Your Name <span className="text-[#DC2626]">*</span>
-                    </label>
-                    <input
-                      id="contact-name"
-                      type="text"
-                      required
-                      value={contactName}
-                      onChange={(e) => setContactName(e.target.value)}
-                      placeholder="e.g. Mahmoud Ali"
-                      className="w-full h-11 px-4 text-xs font-semibold bg-white border border-slate-200 focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] rounded-xl outline-none transition-colors placeholder:text-slate-400 placeholder:font-medium"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label htmlFor="contact-email" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Your Email <span className="text-[#DC2626]">*</span>
-                    </label>
-                    <input
-                      id="contact-email"
-                      type="email"
-                      required
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="e.g. mahmoud@gmail.com"
-                      className="w-full h-11 px-4 text-xs font-semibold bg-white border border-slate-200 focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] rounded-xl outline-none transition-colors placeholder:text-slate-400 placeholder:font-medium"
-                    />
-                  </div>
+            {/* Quick Contact Channels */}
+            <div className="lg:col-span-7 space-y-4">
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-[#0F172A]">Reach Us Directly</h3>
+                <p className="text-xs text-[#64748B] font-medium mt-1">Choose your preferred channel — our team responds promptly.</p>
+              </div>
+
+              {/* WhatsApp */}
+              <motion.a
+                href="https://wa.me/201234567890"
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.01 }}
+                className="flex items-center gap-5 p-6 bg-[#F8FAFC]/50 border border-slate-100 hover:border-[#25D366]/30 hover:bg-[#25D366]/5 rounded-3xl shadow-sm hover:shadow-[0_10px_30px_rgba(37,211,102,0.08)] transition-all duration-300 group cursor-pointer"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[#25D366]/10 text-[#25D366] flex items-center justify-center shrink-0 group-hover:bg-[#25D366] group-hover:text-white transition-all duration-300 shadow-inner">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
                 </div>
-
-                <div className="space-y-1.5">
-                  <label htmlFor="contact-subject" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Subject
-                  </label>
-                  <input
-                    id="contact-subject"
-                    type="text"
-                    value={contactSubject}
-                    onChange={(e) => setContactSubject(e.target.value)}
-                    placeholder="e.g. Schedule inquiry or slot issue"
-                    className="w-full h-11 px-4 text-xs font-semibold bg-white border border-slate-200 focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] rounded-xl outline-none transition-colors placeholder:text-slate-400 placeholder:font-medium"
-                  />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold text-[#0F172A]">WhatsApp</h4>
+                  <p className="text-xs text-[#64748B] font-medium mt-0.5">+20 123 456 7890</p>
+                  <span className="text-[10px] text-[#25D366] font-bold uppercase tracking-wider">Message us →</span>
                 </div>
+                <ArrowRight size={16} className="text-slate-300 group-hover:text-[#25D366] transition-colors duration-200 shrink-0" />
+              </motion.a>
 
-                <div className="space-y-1.5">
-                  <label htmlFor="contact-message" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Message <span className="text-[#DC2626]">*</span>
-                  </label>
-                  <textarea
-                    id="contact-message"
-                    required
-                    rows={4}
-                    value={contactMessage}
-                    onChange={(e) => setContactMessage(e.target.value)}
-                    placeholder="Please enter your request details here (at least 10 characters)..."
-                    className="w-full p-4 text-xs font-semibold bg-white border border-slate-200 focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] rounded-xl outline-none transition-colors resize-none placeholder:text-slate-400 placeholder:font-medium"
-                  />
+              {/* Facebook */}
+              <motion.a
+                href="https://facebook.com/salamathospital"
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.01 }}
+                className="flex items-center gap-5 p-6 bg-[#F8FAFC]/50 border border-slate-100 hover:border-[#1877F2]/30 hover:bg-[#1877F2]/5 rounded-3xl shadow-sm hover:shadow-[0_10px_30px_rgba(24,119,242,0.08)] transition-all duration-300 group cursor-pointer"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[#1877F2]/10 text-[#1877F2] flex items-center justify-center shrink-0 group-hover:bg-[#1877F2] group-hover:text-white transition-all duration-300 shadow-inner">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
                 </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold text-[#0F172A]">Facebook Page</h4>
+                  <p className="text-xs text-[#64748B] font-medium mt-0.5">facebook.com/salamathospital</p>
+                  <span className="text-[10px] text-[#1877F2] font-bold uppercase tracking-wider">Visit our page →</span>
+                </div>
+                <ArrowRight size={16} className="text-slate-300 group-hover:text-[#1877F2] transition-colors duration-200 shrink-0" />
+              </motion.a>
 
-                <Button
-                  type="submit"
-                  disabled={isSubmittingContact || !contactName.trim() || !contactEmail.trim() || !contactMessage.trim()}
-                  className="w-full h-11 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold rounded-xl cursor-pointer transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  {isSubmittingContact ? (
-                    <>
-                      <Loader2 size={16} className="animate-spin" />
-                      <span>Sending Message...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Send size={16} />
-                      <span>Send Message</span>
-                    </>
-                  )}
-                </Button>
-
-                {/* Successful submission feedback */}
-                {contactSubmitted && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-3.5 bg-[#16A34A]/10 border border-[#16A34A]/25 text-[#16A34A] text-xs font-bold rounded-xl text-center"
-                  >
-                    Thank you! Your support message has been sent to our administration team.
-                  </motion.div>
-                )}
-              </form>
+              {/* Hotline */}
+              <motion.a
+                href="tel:19999"
+                whileHover={{ scale: 1.01 }}
+                className="flex items-center gap-5 p-6 bg-[#F8FAFC]/50 border border-slate-100 hover:border-[#14B8A6]/30 hover:bg-[#14B8A6]/5 rounded-3xl shadow-sm hover:shadow-[0_10px_30px_rgba(20,184,166,0.08)] transition-all duration-300 group cursor-pointer"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[#14B8A6]/10 text-[#14B8A6] flex items-center justify-center shrink-0 group-hover:bg-[#14B8A6] group-hover:text-white transition-all duration-300 shadow-inner">
+                  <PhoneCall size={26} className="stroke-[1.8]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold text-[#0F172A]">Direct Hotline</h4>
+                  <p className="text-xs text-[#64748B] font-medium mt-0.5">19999 — Toll Free</p>
+                  <span className="text-[10px] text-[#14B8A6] font-bold uppercase tracking-wider">Call now →</span>
+                </div>
+                <ArrowRight size={16} className="text-slate-300 group-hover:text-[#14B8A6] transition-colors duration-200 shrink-0" />
+              </motion.a>
             </div>
           </div>
         </div>

@@ -30,6 +30,9 @@ import {
   createAppointmentSlot,
   updateAppointmentSlot,
   cancelSessionsOnDate,
+  getPendingAppointments,
+  approveAppointment,
+  rejectAppointment,
 } from "../services/appointment";
 import api from "../services/api";
 import { getLocalDateString } from "../lib/formatters";
@@ -40,7 +43,7 @@ export function useAdminDashboard() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const { confirm: customConfirm } = useModal();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "clinics" | "doctors" | "patients" | "slots" | "messages"
+    "overview" | "approvals" | "clinics" | "doctors" | "patients" | "slots" | "messages"
   >("overview");
 
   // Admin Slot Management States
@@ -151,6 +154,12 @@ export function useAdminDashboard() {
   const { data: appointments = [], isLoading: loadingAppointments } = useQuery<any[]>({
     queryKey: ["adminAppointments"],
     queryFn: getAppointments,
+    enabled: !!(user?.role === "admin"),
+  });
+
+  const { data: pendingAppointments = [], isLoading: loadingPendingAppointments, refetch: refetchPending } = useQuery<any[]>({
+    queryKey: ["adminPendingAppointments"],
+    queryFn: getPendingAppointments,
     enabled: !!(user?.role === "admin"),
   });
 
@@ -968,6 +977,32 @@ export function useAdminDashboard() {
     loadData,
     loadMessages,
     fetchAdminSlots,
+
+    pendingAppointments,
+    loadingPendingAppointments,
+    refetchPending,
+    handleApproveAppointment: async (id: string) => {
+      try {
+        setActionError(null);
+        await approveAppointment(id);
+        setActionSuccess("Appointment approved successfully!");
+        queryClient.invalidateQueries({ queryKey: ["adminPendingAppointments"] });
+        queryClient.invalidateQueries({ queryKey: ["adminAppointments"] });
+      } catch (err: any) {
+        setActionError(getFriendlyErrorMessage(err));
+      }
+    },
+    handleRejectAppointment: async (id: string, reason?: string) => {
+      try {
+        setActionError(null);
+        await rejectAppointment(id, reason);
+        setActionSuccess("Appointment request rejected.");
+        queryClient.invalidateQueries({ queryKey: ["adminPendingAppointments"] });
+        queryClient.invalidateQueries({ queryKey: ["adminAppointments"] });
+      } catch (err: any) {
+        setActionError(getFriendlyErrorMessage(err));
+      }
+    },
   };
 }
 

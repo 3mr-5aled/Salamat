@@ -96,6 +96,7 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
       const timeStr = minutesToTime(slotMin);
 
       let regStatus = "approved";
+      if (app.status === "Pending") regStatus = "pending";
       if (app.status === "Cancelled") regStatus = "rejected";
 
       const patientArray = [
@@ -120,7 +121,7 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
         date: session.date,
         time: timeStr,
         duration: session.appointmentDuration,
-        status: app.status === "Cancelled" ? "Cancelled" : "Scheduled",
+        status: app.status,
         sessionStatus: session.status,
         notes: app.notes,
         patient: patientArray,
@@ -333,15 +334,30 @@ exports.registerAppointment = async (req, res, next) => {
 exports.cancelAppointmentRegistration = exports.cancelAppointmentController;
 exports.getAllAppointments = exports.getAppointmentsOrScheduleController;
 
-// Mock endpoints for approval system (which is no longer needed but kept to prevent route compile crashes)
+// Approval system controllers
 exports.getPendingRegistrations = async (req, res, next) => {
-  res.status(200).json({ status: "success", results: 0, data: [] });
+  try {
+    const pending = await appointmentService.getPendingAppointments();
+    res.status(200).json({ status: "success", results: pending.length, data: pending });
+  } catch (error) {
+    return next(error);
+  }
 };
 exports.approveRegistration = async (req, res, next) => {
-  res.status(200).json({ status: "success", message: "Auto-approved" });
+  try {
+    const appointment = await appointmentService.approveAppointment(req.params.id);
+    res.status(200).json({ status: "success", message: "Appointment approved successfully", data: appointment });
+  } catch (error) {
+    return next(error);
+  }
 };
 exports.rejectRegistration = async (req, res, next) => {
-  res.status(200).json({ status: "success", message: "Auto-approved" });
+  try {
+    const appointment = await appointmentService.rejectAppointment(req.params.id, req.body ? req.body.reason : "");
+    res.status(200).json({ status: "success", message: "Appointment rejected successfully", data: appointment });
+  } catch (error) {
+    return next(error);
+  }
 };
 
 // @desc    Cancel a clinic session (cancels session status and all associated non-completed slots)

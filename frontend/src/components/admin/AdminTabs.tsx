@@ -158,6 +158,107 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
         </div>
       )}
 
+      {/* APPROVALS TAB */}
+      {activeTab === "approvals" && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-xl font-black text-[#0F172A]">Pending Appointment Approvals</h2>
+              <p className="text-xs text-slate-500 font-medium">Review and verify pending patient appointment requests before confirming schedules.</p>
+            </div>
+            <span className="bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full">
+              {admin.pendingAppointments?.length || 0} Pending
+            </span>
+          </div>
+
+          {admin.loadingPendingAppointments ? (
+            <div className="p-10 text-center text-xs text-slate-500 font-semibold bg-white rounded-2xl border border-slate-100 shadow-sm">
+              Loading pending appointment requests...
+            </div>
+          ) : !admin.pendingAppointments || admin.pendingAppointments.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-12 text-center max-w-md mx-auto my-6">
+              <div className="w-16 h-16 rounded-full bg-green-50 text-green-600 flex items-center justify-center mx-auto mb-4 font-bold text-xl">
+                ✓
+              </div>
+              <h3 className="font-bold text-lg text-[#0F172A] mb-2">All Clear!</h3>
+              <p className="text-sm text-[#64748B] leading-relaxed">
+                There are currently no pending appointment requests awaiting administrative approval.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {admin.pendingAppointments.map((appt: any) => (
+                <Card key={appt._id} className="rounded-2xl border border-amber-200/80 bg-white shadow-sm overflow-hidden flex flex-col justify-between">
+                  <div className="p-5 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="bg-amber-50 text-amber-700 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border border-amber-200">
+                        Pending Approval
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400">
+                        Requested: {new Date(appt.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-slate-900 text-base">
+                        Patient: {appt.patient?.fullName || "Guest Patient"}
+                      </h3>
+                      <div className="text-xs text-slate-500 space-x-2">
+                        {appt.patient?.email && <span>{appt.patient.email}</span>}
+                        {appt.patient?.phone && <span>• {appt.patient.phone}</span>}
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-xl p-3 text-xs space-y-1 border border-slate-100">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400 font-semibold">Doctor:</span>
+                        <span className="font-bold text-slate-800">
+                          Dr. {appt.session?.doctor?.fullName || "Specialist"} ({appt.session?.doctor?.specialization || "General"})
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400 font-semibold">Clinic:</span>
+                        <span className="font-bold text-slate-800">{appt.session?.clinic?.name || "Main Clinic"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400 font-semibold">Date & Time:</span>
+                        <span className="font-bold text-[#2563EB]">
+                          {new Date(appt.appointmentTime || appt.session?.date).toLocaleDateString()} @ {new Date(appt.appointmentTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {appt.notes && (
+                      <div className="space-y-1">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">Symptoms / Notes:</span>
+                        <div className="p-3 bg-blue-50/50 rounded-xl text-xs text-slate-700 italic border border-blue-100/50">
+                          {appt.notes}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-slate-50 border-t border-slate-100 p-4 flex gap-3 justify-end">
+                    <Button
+                      onClick={() => admin.handleRejectAppointment(appt._id)}
+                      className="bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold px-4 py-2 cursor-pointer"
+                    >
+                      Reject Request
+                    </Button>
+                    <Button
+                      onClick={() => admin.handleApproveAppointment(appt._id)}
+                      className="bg-green-600 hover:bg-green-700 text-white rounded-xl text-xs font-bold px-5 py-2 cursor-pointer"
+                    >
+                      Approve Appointment
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* CLINICS TAB */}
       {activeTab === "clinics" && (
         <div className="space-y-6">

@@ -1,178 +1,142 @@
 import React, { useState } from "react";
-import api from "../../services/api";
+import { Sparkles, Loader2, AlertTriangle, RefreshCw, Check, X } from "lucide-react";
 import { Button } from "../ui/button";
-import { Sparkles, Check, AlertCircle, Loader2 } from "lucide-react";
-import type { PrescriptionItem } from "../../types";
+import { summarizeNotes } from "../../services/ai";
+import type { SummarizeResult } from "../../services/ai";
+import { getFriendlyAIErrorMessage } from "../../lib/error-parser";
 
 interface AIConsultationHelperProps {
-  onApply: (diagnosis: string, prescriptions: PrescriptionItem[]) => void;
+  rawNotes: string;
+  onApply: (soapFormattedText: string) => void;
 }
 
-export const AIConsultationHelper: React.FC<AIConsultationHelperProps> = ({ onApply }) => {
-  const [notes, setNotes] = useState("");
+export const AIConsultationHelper: React.FC<AIConsultationHelperProps> = ({ rawNotes, onApply }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{
-    soapNotes: string;
-    prescriptions: PrescriptionItem[];
-  } | null>(null);
-  const [applied, setApplied] = useState(false);
+  const [preview, setPreview] = useState<SummarizeResult | null>(null);
 
-  const handleGenerate = async () => {
-    if (!notes.trim()) {
-      setError("Please enter some unstructured clinical notes first.");
-      return;
-    }
-
+  const handleStructure = async () => {
+    if (!rawNotes.trim() || rawNotes.trim().length < 10) return;
     setLoading(true);
     setError(null);
-    setApplied(false);
 
     try {
-      const response = await api.post("/ai/summarize", { notes: notes.trim() });
-      
-      // Support both { status: "success", data: { soapNotes, prescriptions } } and { soapNotes, prescriptions }
-      const data = response.data?.data || response.data;
-      
-      if (data && (data.soapNotes || data.prescriptions)) {
-        setResult({
-          soapNotes: data.soapNotes || "",
-          prescriptions: data.prescriptions || [],
-        });
-      } else {
-        throw new Error("Invalid response format from AI service");
-      }
+      const res = await summarizeNotes(rawNotes.trim());
+      setPreview(res);
     } catch (err: any) {
-      console.error(err);
-      setError(
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to connect to AI summarizer. Please try again."
-      );
+      setError(getFriendlyAIErrorMessage(err, "summarize"));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApply = () => {
-    if (result) {
-      onApply(result.soapNotes, result.prescriptions);
-      setApplied(true);
-      setTimeout(() => setApplied(false), 2000);
-    }
+  const handleConfirmApply = () => {
+    if (!preview) return;
+    const soapText = [
+      `Subjective: ${preview.soap.subjective}`,
+      `Objective: ${preview.soap.objective}`,
+      `Assessment: ${preview.soap.assessment}`,
+      `Plan: ${preview.soap.plan}`,
+    ].join("\n\n");
+
+    onApply(soapText);
+    setPreview(null);
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-2xl border border-blue-100 p-4 space-y-4 shadow-sm transition-all duration-300">
-      <div className="flex items-center gap-2 border-b border-blue-100/55 pb-2">
-        <div className="bg-blue-600 p-1.5 rounded-lg text-white">
-          <Sparkles size={16} className="animate-pulse" />
-        </div>
-        <div>
-          <h4 className="text-sm font-bold text-[#0F172A]">AI Consultation Co-Pilot</h4>
-          <p className="text-[11px] text-[#64748B]">
-            Type or paste unstructured notes to auto-format SOAP notes and prescriptions.
-          </p>
-        </div>
+    <div className="space-y-3 pt-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-slate-400 font-medium">
+          {rawNotes.trim().length < 10 ? "Min 10 chars to structure with AI" : "AI Assistant ready"}
+        </span>
+        <Button
+          type="button"
+          onClick={handleStructure}
+          disabled={loading || rawNotes.trim().length < 10}
+          size="sm"
+          className="h-8 px-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+        >
+          {loading ? (
+            <>
+              <Loader2 size={13} className="animate-spin" />
+              <span>Structuring...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles size={13} />
+              <span>Structure with AI</span>
+            </>
+          )}
+        </Button>
       </div>
 
-      <div className="space-y-2">
-        <textarea
-          rows={3}
-          placeholder="e.g. patient has severe eczema. prescribed hydrocortisone cream 1% twice daily for 7 days. follow up in 2 weeks."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-xs focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-[#94A3B8]"
-        />
-        
-        {error && (
-          <div className="flex items-center gap-1.5 text-red-600 bg-red-50 p-2 rounded-lg text-xs font-medium border border-red-100">
-            <AlertCircle size={14} className="shrink-0" />
+      {/* Inline Error State */}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <AlertTriangle size={14} className="shrink-0 text-red-600" />
             <span>{error}</span>
           </div>
-        )}
-
-        <div className="flex justify-end">
           <Button
             type="button"
-            onClick={handleGenerate}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 text-xs font-semibold flex items-center gap-1.5 shadow-[0_2px_8px_rgba(37,99,235,0.15)] disabled:opacity-70 transition-all cursor-pointer"
+            variant="outline"
+            size="sm"
+            onClick={handleStructure}
+            className="h-7 px-2.5 text-xs border-red-200 text-red-700 hover:bg-red-100 flex items-center gap-1"
           >
-            {loading ? (
-              <>
-                <Loader2 size={12} className="animate-spin" />
-                <span>Formatting notes...</span>
-              </>
-            ) : (
-              <>
-                <Sparkles size={12} />
-                <span>AI Format & Generate SOAP Notes</span>
-              </>
-            )}
+            <RefreshCw size={11} />
+            <span>Retry</span>
           </Button>
         </div>
-      </div>
+      )}
 
-      {result && (
-        <div className="mt-3 border-t border-blue-100/50 pt-3 space-y-3 bg-white/60 rounded-xl p-3 border border-white">
-          <div className="space-y-1">
-            <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">
-              Generated SOAP Notes
-            </span>
-            <div className="text-xs text-[#334155] whitespace-pre-wrap bg-white/80 p-2.5 rounded-lg border border-slate-100 leading-relaxed font-mono max-h-[150px] overflow-y-auto">
-              {result.soapNotes}
+      {/* SOAP Preview Card */}
+      {preview && (
+        <div className="bg-slate-900 border border-slate-800 text-slate-100 rounded-2xl p-4 space-y-4 shadow-lg animate-in fade-in duration-200">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+            <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+              <Sparkles size={14} />
+              <span>SOAP Note AI Preview</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setPreview(null)}
+                className="h-7 px-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
+              >
+                <X size={13} />
+                <span>Discard</span>
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleConfirmApply}
+                className="h-7 px-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1 cursor-pointer"
+              >
+                <Check size={13} />
+                <span>Apply SOAP Note</span>
+              </Button>
             </div>
           </div>
 
-          {result.prescriptions && result.prescriptions.length > 0 && (
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider block">
-                Structured Prescriptions
-              </span>
-              <div className="overflow-x-auto rounded-lg border border-slate-100 bg-white/80">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] font-bold text-[#64748B] uppercase">
-                      <th className="p-2">Medication</th>
-                      <th className="p-2">Dosage</th>
-                      <th className="p-2">Freq</th>
-                      <th className="p-2">Duration</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-xs text-[#334155]">
-                    {result.prescriptions.map((rx, idx) => (
-                      <tr key={idx} className="border-b border-slate-100 last:border-b-0">
-                        <td className="p-2 font-medium">{rx.medication || "-"}</td>
-                        <td className="p-2">{rx.dosage || "-"}</td>
-                        <td className="p-2">{rx.frequency || "-"}</td>
-                        <td className="p-2">{rx.duration || "-"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <div className="grid grid-cols-1 gap-2.5 text-xs font-medium">
+            <div className="p-2.5 bg-slate-800/60 rounded-xl">
+              <span className="font-bold text-indigo-300 uppercase tracking-wider text-[10px] block mb-0.5">Subjective</span>
+              <p className="text-slate-200 leading-relaxed">{preview.soap.subjective}</p>
             </div>
-          )}
-
-          <div className="flex justify-end pt-1">
-            <Button
-              type="button"
-              onClick={handleApply}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2 text-xs font-semibold flex items-center gap-1.5 shadow-[0_2px_8px_rgba(16,185,129,0.15)] transition-all cursor-pointer"
-            >
-              {applied ? (
-                <>
-                  <Check size={12} />
-                  <span>Applied Successfully!</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles size={12} />
-                  <span>Use AI Recommendation</span>
-                </>
-              )}
-            </Button>
+            <div className="p-2.5 bg-slate-800/60 rounded-xl">
+              <span className="font-bold text-indigo-300 uppercase tracking-wider text-[10px] block mb-0.5">Objective</span>
+              <p className="text-slate-200 leading-relaxed">{preview.soap.objective}</p>
+            </div>
+            <div className="p-2.5 bg-slate-800/60 rounded-xl">
+              <span className="font-bold text-indigo-300 uppercase tracking-wider text-[10px] block mb-0.5">Assessment</span>
+              <p className="text-slate-200 leading-relaxed">{preview.soap.assessment}</p>
+            </div>
+            <div className="p-2.5 bg-slate-800/60 rounded-xl">
+              <span className="font-bold text-indigo-300 uppercase tracking-wider text-[10px] block mb-0.5">Plan</span>
+              <p className="text-slate-200 leading-relaxed">{preview.soap.plan}</p>
+            </div>
           </div>
         </div>
       )}

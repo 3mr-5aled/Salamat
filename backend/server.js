@@ -20,8 +20,7 @@ mongoose.set("strictQuery", false);
 // Connect with db
 dbConnection();
 
-// express app
-const app = express();
+const app = require("./src/app");
 // display port and mode
 const PORT = process.env.PORT || 8000;
 const NODE_ENV = process.env.NODE_ENV || "development";

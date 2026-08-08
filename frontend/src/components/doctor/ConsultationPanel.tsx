@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from "../ui/dialog";
 import { formatTimeInterval } from "../../lib/formatters";
+import { AIConsultationHelper } from "./AIConsultationHelper";
 import type { PrescriptionItem } from "../../types";
 
 interface ConsultationPanelProps {
@@ -116,6 +117,10 @@ export const ConsultationPanel: React.FC<ConsultationPanelProps> = ({
               onChange={(e) => setDiagnosis(e.target.value)}
               className="w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-4 focus:ring-[#2563EB]/10 transition-all"
               required
+            />
+            <AIConsultationHelper
+              rawNotes={diagnosis}
+              onApply={(soapText) => setDiagnosis(soapText)}
             />
           </div>
 

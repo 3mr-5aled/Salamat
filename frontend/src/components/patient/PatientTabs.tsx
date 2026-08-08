@@ -20,6 +20,7 @@ import {
   Activity,
   ArrowLeft,
 } from "lucide-react";
+import { SymptomTriageTab } from "./SymptomTriageTab";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -253,6 +254,15 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {activeTab === "check-symptoms" && (
+        <SymptomTriageTab
+          onFindDoctor={(spec) => {
+            setSelectedSpecialty(spec);
+            setActiveTab("find-doctor");
+          }}
+        />
       )}
 
       {activeTab === "find-doctor" && (
@@ -828,8 +838,18 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
           )}
 
           {(() => {
-            const active = bookings.filter((b: any) => b.status !== "Completed" && b.status !== "Cancelled");
-            const archived = bookings.filter((b: any) => b.status === "Completed" || b.status === "Cancelled");
+            const now = new Date();
+            // Active: future pending or scheduled appointments
+            const active = bookings.filter((b: any) => {
+              const isPast = b.date ? new Date(b.date) < now : false;
+              if (isPast) return false;
+              if (b.status === "Cancelled" || b.sessionStatus === "Cancelled" || b.registrationStatus === "rejected") return false;
+              if (b.status === "Completed") return false;
+              return true;
+            });
+
+            // Archived: past, completed, cancelled, or rejected requests
+            const archived = bookings.filter((b: any) => !active.includes(b));
 
             const renderBookingCard = (booking: any) => {
               let badgeColor = "bg-[#F59E0B]/10 text-[#F59E0B]";
@@ -837,20 +857,19 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
               let showCancel = false;
               let showViewRx = false;
 
-              if (booking.status === "Cancelled" || booking.sessionStatus === "Cancelled") {
-                badgeColor = "bg-slate-100 text-slate-500 border border-slate-200";
-                statusLabel = booking.sessionStatus === "Cancelled" ? "Cancelled (Session Cancelled)" : "Cancelled";
+              if (booking.status === "Cancelled" || booking.sessionStatus === "Cancelled" || booking.registrationStatus === "rejected") {
+                badgeColor = "bg-red-50 text-red-600 border border-red-100";
+                statusLabel = booking.sessionStatus === "Cancelled"
+                  ? "Cancelled (Session Cancelled)"
+                  : (booking.registrationStatus === "rejected" ? "Request Rejected" : "Cancelled");
               } else if (booking.status === "Completed") {
                 badgeColor = "bg-[#2563EB]/10 text-[#2563EB]";
                 statusLabel = "Completed";
                 showViewRx = true;
-              } else if (booking.registrationStatus === "approved") {
+              } else if (booking.status === "Scheduled" || booking.registrationStatus === "approved") {
                 badgeColor = "bg-[#16A34A]/10 text-[#16A34A]";
                 statusLabel = "Approved / Scheduled";
                 showCancel = true;
-              } else if (booking.registrationStatus === "rejected") {
-                badgeColor = "bg-red-500/10 text-red-500";
-                statusLabel = "Rejected";
               } else {
                 badgeColor = "bg-[#F59E0B]/10 text-[#F59E0B]";
                 statusLabel = "Pending Approval";
@@ -859,7 +878,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
 
               return (
                 <Card
-                  key={booking.appointmentId}
+                  key={booking._id || booking.appointmentId}
                   className="rounded-2xl border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)] p-6 bg-white flex flex-col sm:flex-row justify-between sm:items-center gap-4 hover:shadow-[0_10px_30px_rgba(0,0,0,0.04)] transition-all"
                 >
                   <div className="space-y-2 flex-1 w-full">
@@ -913,17 +932,17 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                           </div>
                         ) : (
                           <p className="text-xs text-[#64748B] italic bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                            <span className="font-bold text-[#0F172A] not-italic block mb-0.5">Symptoms:</span>
+                            <span className="font-bold text-[#0F172A] not-italic block mb-0.5">Symptoms / Request Notes:</span>
                             {booking.symptoms}
                           </p>
                         )}
                       </div>
                     )}
 
-                    {booking.registrationStatus === "rejected" && booking.rejectionReason && (
-                      <div className="text-xs text-red-500 italic bg-red-50 p-2.5 rounded-xl border border-red-100 max-w-xl">
-                        <span className="font-bold not-italic block mb-0.5">Rejection Reason:</span>
-                        {booking.rejectionReason}
+                    {(booking.registrationStatus === "rejected" || booking.notes?.includes("Rejected:")) && (
+                      <div className="text-xs text-red-600 italic bg-red-50 p-2.5 rounded-xl border border-red-100 max-w-xl">
+                        <span className="font-bold not-italic block mb-0.5">Rejection / Cancellation Details:</span>
+                        {booking.rejectionReason || booking.notes || "Not approved by administration."}
                       </div>
                     )}
 
@@ -950,11 +969,11 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleCancel(booking.appointmentId)}
+                        onClick={() => handleCancel(booking._id || booking.appointmentId)}
                         className="flex items-center gap-1.5 border-[#DC2626] text-[#DC2626] hover:bg-[#DC2626]/5 rounded-xl px-4 py-2.5 text-xs font-bold transition-all cursor-pointer"
                       >
                         <XCircle size={14} />
-                        <span>{booking.registrationStatus === "pending" ? "Cancel Request" : "Cancel Booking"}</span>
+                        <span>{booking.status === "Pending" ? "Cancel Pending Request" : "Cancel Booking"}</span>
                       </Button>
                     )}
                   </div>
@@ -986,19 +1005,19 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
               <div className="space-y-6">
                 {/* Active Bookings */}
                 <div className="space-y-3">
-                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Upcoming Scheduled Visits</h3>
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Active & Pending Visits</h3>
                   {active.length > 0 ? (
                     <div className="space-y-4">
                       {active.map(renderBookingCard)}
                     </div>
                   ) : (
                     <div className="text-center p-8 bg-white border border-dashed border-slate-200 rounded-2xl">
-                      <p className="text-xs text-slate-400 font-semibold">No upcoming appointments scheduled.</p>
+                      <p className="text-xs text-slate-400 font-semibold">No active or pending appointments.</p>
                     </div>
                   )}
                 </div>
 
-                {/* Archived / Past Bookings */}
+                {/* Archived / Past / Non-approved Requests */}
                 {archived.length > 0 && (
                   <div className="space-y-3 border-t border-slate-100 pt-6">
                     <Button
@@ -1008,7 +1027,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                       onClick={() => setPatientArchivedOpen(!patientArchivedOpen)}
                       className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 uppercase tracking-wider cursor-pointer select-none bg-slate-50 border border-slate-100 hover:border-slate-200 px-4 py-2.5 rounded-xl w-fit"
                     >
-                      <span>{patientArchivedOpen ? "Hide Consultation History ▲" : `View Consultation History (${archived.length}) ▼`}</span>
+                      <span>{patientArchivedOpen ? "Hide Past & Archived Requests ▲" : `View Past & Archived Requests (${archived.length}) ▼`}</span>
                     </Button>
 
                     {patientArchivedOpen && (

@@ -16,7 +16,7 @@ import { getTodayTipIndex } from "../lib/wellnessTips";
 import { getLocalDateString } from "../lib/formatters";
 import type { MappedPatientBooking } from "../types";
 
-export type PatientTab = "overview" | "find-doctor" | "bookings" | "profile";
+export type PatientTab = "overview" | "check-symptoms" | "find-doctor" | "bookings" | "profile";
 
 export function usePatientDashboard() {
   const queryClient = useQueryClient();

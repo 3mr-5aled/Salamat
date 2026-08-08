@@ -60,3 +60,43 @@ export function getFriendlyErrorMessage(error: any): string {
 
   return "An unexpected error occurred. Please try again.";
 }
+
+/**
+ * Parses AI-specific errors into warm, client-friendly, non-technical messages.
+ */
+export function getFriendlyAIErrorMessage(error: any, fallbackContext: "triage" | "summarize" = "triage"): string {
+  if (!error) {
+    return "Our AI assistant is temporarily unavailable. Please try again in a moment.";
+  }
+
+  // Network / Connection Error
+  if (error.request && !error.response) {
+    return "Unable to connect to our medical AI assistant. Please check your internet connection and try again.";
+  }
+
+  if (error.response) {
+    const status = error.response.status;
+
+    if (status === 400) {
+      return fallbackContext === "triage"
+        ? "Please describe your symptoms in a bit more detail so our AI can give an accurate recommendation."
+        : "Please add a few more details to your clinical notes so the AI can structure them into SOAP format.";
+    }
+
+    if (status === 401 || status === 403) {
+      return "Your session has expired or you do not have permission to access the AI assistant. Please re-login.";
+    }
+
+    if (status === 429) {
+      return "The AI assistant is receiving a high number of requests right now. Please wait a few seconds and try again.";
+    }
+
+    if (status >= 500) {
+      return "Our AI medical service is experiencing a temporary delay. Please click retry or try again shortly.";
+    }
+  }
+
+  return fallbackContext === "triage"
+    ? "We couldn't analyze your symptoms right now. Please try again in a moment."
+    : "We couldn't structure your clinical notes right now. Please try again in a moment.";
+}

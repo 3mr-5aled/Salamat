@@ -144,11 +144,23 @@ router.post(
   adminBookController
 );
 
-// Admin-only / Doctor approval list endpoints (Mocked out)
+// Admin & Doctor approval list and action endpoints
+router.get(
+  "/pending",
+  allowedTo("admin", "doctor"),
+  getPendingRegistrations
+);
+
 router.get(
   "/pending-registrations",
-  allowedTo("admin"),
+  allowedTo("admin", "doctor"),
   getPendingRegistrations
+);
+
+router.patch(
+  "/:id/approve",
+  allowedTo("admin", "doctor"),
+  approveRegistration
 );
 
 router.patch(
@@ -156,6 +168,12 @@ router.patch(
   allowedTo("admin", "doctor"),
   approveRegistrationValidator,
   approveRegistration
+);
+
+router.patch(
+  "/:id/reject",
+  allowedTo("admin", "doctor"),
+  rejectRegistration
 );
 
 router.patch(

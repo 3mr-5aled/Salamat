@@ -241,6 +241,33 @@ export const approvePatientRegistration = async (
 };
 
 /**
+ * Fetch all pending appointment registrations for administrative approval.
+ */
+export const getPendingAppointments = async (): Promise<AppointmentSlot[]> => {
+  const response = await api.get("/appointments/pending");
+  return response.data?.data || [];
+};
+
+/**
+ * Approve a pending appointment registration.
+ */
+export const approveAppointment = async (appointmentId: string): Promise<AppointmentSlot> => {
+  const response = await api.patch(`/appointments/${appointmentId}/approve`);
+  return response.data?.data;
+};
+
+/**
+ * Reject a pending appointment registration.
+ */
+export const rejectAppointment = async (
+  appointmentId: string,
+  reason?: string
+): Promise<AppointmentSlot> => {
+  const response = await api.patch(`/appointments/${appointmentId}/reject`, { reason });
+  return response.data?.data;
+};
+
+/**
  * Reject a patient's registration request for a slot.
  * 
  * @param slotId - The ID of the appointment slot.

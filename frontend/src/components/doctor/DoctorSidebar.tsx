@@ -15,6 +15,8 @@ import { useAuth } from "../../contexts/AuthContext";
 import type { DoctorTab } from "../../hooks/useDoctorDashboard";
 import AppLogo from "../../assets/app-logo-transparent.png";
 
+import { NotificationBell } from "../NotificationBell";
+
 interface DoctorSidebarProps {
   activeTab: DoctorTab;
   setActiveTab: (tab: DoctorTab) => void;
@@ -58,14 +60,17 @@ export const DoctorSidebar: React.FC<DoctorSidebarProps> = ({
       <aside className="w-64 bg-white border-r border-[#E2E8F0] flex flex-col hidden md:flex shrink-0">
 
         {/* Branding */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-[#E2E8F0]">
-          <div className="p-1 bg-[#2563EB]/8 rounded-lg flex items-center justify-center">
-            <img src={AppLogo} alt="Salamat Logo" className="h-8 w-auto object-contain" />
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#E2E8F0]">
+          <div className="flex items-center gap-3">
+            <div className="p-1 bg-[#2563EB]/8 rounded-lg flex items-center justify-center">
+              <img src={AppLogo} alt="Salamat Logo" className="h-8 w-auto object-contain" />
+            </div>
+            <div>
+              <div className="text-base font-black text-[#0F172A] tracking-tight leading-tight">Salamat</div>
+              <div className="text-[10px] font-semibold text-[#2563EB] uppercase tracking-widest">Doctor Portal</div>
+            </div>
           </div>
-          <div>
-            <div className="text-base font-black text-[#0F172A] tracking-tight leading-tight">Salamat</div>
-            <div className="text-[10px] font-semibold text-[#2563EB] uppercase tracking-widest">Doctor Portal</div>
-          </div>
+          <NotificationBell />
         </div>
 
         {/* Nav Links */}

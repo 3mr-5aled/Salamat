@@ -3,6 +3,8 @@ const Appointment = require("../models/appointment.model");
 const ClinicSession = require("../models/clinicSession.model");
 const Doctor = require("../models/doctor.model");
 const Patient = require("../models/patient.model");
+const User = require("../models/user.model");
+const { createNotification } = require("../controllers/notification.controller");
 const { generateSessionSlots } = require("../utils/helpers/sessionHelper");
 
 /**
@@ -187,57 +189,195 @@ class AppointmentService {
         throw new ApiError("Patient not found", 404);
       }
 
-      // 3. Generate all possible slots
+      // 3. Single Active Appointment Guardrail across entire system
+      const existingActiveAppointment = await Appointment.findOne({
+        patient: patientId,
+        status: { $in: ["Pending", "Scheduled"] },
+      });
+      if (existingActiveAppointment) {
+        throw new ApiError("Patient already has an active or pending appointment", 400);
+      }
+
+      // 4. Generate all possible slots
       const allSlots = generateSessionSlots(session);
 
-      // 4. Load all active appointments in that session (exclude Cancelled)
+      // 5. Load all active appointments in that session (exclude Cancelled)
       const bookedAppointments = await Appointment.find({
         session: sessionId,
         status: { $ne: "Cancelled" },
       });
 
-      // 5. Determine occupied slot indexes
+      // 6. Determine occupied slot indexes
       const occupiedIndexes = new Set(bookedAppointments.map((app) => app.slotIndex));
 
-      // 6. Find the first available slot index that is not reserved for emergency
+      // 7. Find the first available slot index that is not reserved for emergency
       const availableSlot = allSlots.find((slot) => !occupiedIndexes.has(slot.slotIndex) && slot.type !== "emergency");
 
       if (!availableSlot) {
         throw new ApiError("Session Full", 400);
       }
 
-      // Check if patient is already booked for an active slot in this same session
-      const alreadyBooked = bookedAppointments.some(
-        (app) => app.patient.toString() === patientId.toString()
-      );
-      if (alreadyBooked) {
-        throw new ApiError("Patient is already booked for this session", 400);
-      }
-
-      // 7. Create the Appointment
+      // 8. Create the Appointment with Pending status
       const appointment = await Appointment.create({
         session: sessionId,
         patient: patientId,
         slotIndex: availableSlot.slotIndex,
         appointmentTime: availableSlot.appointmentTime,
-        status: "Scheduled",
+        status: "Pending",
         notes: notes,
         type: availableSlot.type || "consultation",
       });
+
+      // 9. Send notification to Admins
+      try {
+        const admins = await User.find({ role: "admin" });
+        for (const admin of admins) {
+          await createNotification({
+            recipient: admin._id,
+            title: "New Appointment Pending Approval",
+            message: `${patient.fullName} requested an appointment for session on ${new Date(session.date).toLocaleDateString()}`,
+            type: "appointment_booked",
+            link: "/admin/approvals",
+          });
+        }
+      } catch (notifErr) {
+        console.error("Failed to dispatch admin notification:", notifErr);
+      }
 
       return await appointment.populate([
         {
           path: "session",
           populate: [
-            { path: "doctor", select: "fullName specialization" },
+            { path: "doctor", select: "fullName specialization user" },
             { path: "clinic", select: "name" }
           ]
         },
-        { path: "patient", select: "fullName email phone" }
+        { path: "patient", select: "fullName email phone user" }
       ]);
     } catch (error) {
       if (error instanceof ApiError) throw error;
       throw new ApiError("Failed to book appointment", 500);
+    }
+  }
+
+  /**
+   * Get all pending appointment registrations for admin approval
+   */
+  async getPendingAppointments() {
+    try {
+      const pendingAppointments = await Appointment.find({ status: "Pending" })
+        .populate({
+          path: "session",
+          populate: [
+            { path: "doctor", select: "fullName specialization user" },
+            { path: "clinic", select: "name location" }
+          ]
+        })
+        .populate({ path: "patient", select: "fullName email phone user medicalRecordNumber" })
+        .sort({ createdAt: -1 });
+
+      return pendingAppointments;
+    } catch (error) {
+      throw new ApiError("Failed to fetch pending appointments", 500);
+    }
+  }
+
+  /**
+   * Approve a pending appointment registration
+   * @param {string} appointmentId
+   */
+  async approveAppointment(appointmentId) {
+    try {
+      const appointment = await Appointment.findById(appointmentId)
+        .populate({
+          path: "session",
+          populate: [{ path: "doctor", select: "fullName user" }]
+        })
+        .populate({ path: "patient", select: "fullName user" });
+
+      if (!appointment) {
+        throw new ApiError("Appointment not found", 404);
+      }
+      if (appointment.status !== "Pending") {
+        throw new ApiError("Appointment is not pending approval", 400);
+      }
+
+      appointment.status = "Scheduled";
+      await appointment.save();
+
+      // Notify Patient
+      if (appointment.patient && appointment.patient.user) {
+        const patientUserId = appointment.patient.user._id || appointment.patient.user;
+        const doctorName = appointment.session?.doctor?.fullName || "Doctor";
+        await createNotification({
+          recipient: patientUserId,
+          title: "Appointment Approved!",
+          message: `Your appointment request with ${doctorName} has been approved.`,
+          type: "appointment_approved",
+          link: "/patient/my-bookings",
+        });
+      }
+
+      // Notify Doctor
+      if (appointment.session?.doctor?.user) {
+        const doctorUserId = appointment.session.doctor.user._id || appointment.session.doctor.user;
+        const patientName = appointment.patient?.fullName || "Patient";
+        await createNotification({
+          recipient: doctorUserId,
+          title: "New Appointment Confirmed",
+          message: `Appointment for ${patientName} is confirmed for ${new Date(appointment.appointmentTime).toLocaleString()}.`,
+          type: "appointment_approved",
+          link: "/doctor/schedule",
+        });
+      }
+
+      return appointment;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      throw new ApiError("Failed to approve appointment", 500);
+    }
+  }
+
+  /**
+   * Reject a pending appointment registration
+   * @param {string} appointmentId
+   * @param {string} reason
+   */
+  async rejectAppointment(appointmentId, reason = "") {
+    try {
+      const appointment = await Appointment.findById(appointmentId)
+        .populate({
+          path: "session",
+          populate: [{ path: "doctor", select: "fullName" }]
+        })
+        .populate({ path: "patient", select: "fullName user" });
+
+      if (!appointment) {
+        throw new ApiError("Appointment not found", 404);
+      }
+
+      appointment.status = "Cancelled";
+      if (reason) {
+        appointment.notes = appointment.notes ? `${appointment.notes} | Rejected: ${reason}` : `Rejected: ${reason}`;
+      }
+      await appointment.save();
+
+      // Notify Patient
+      if (appointment.patient && appointment.patient.user) {
+        const patientUserId = appointment.patient.user._id || appointment.patient.user;
+        await createNotification({
+          recipient: patientUserId,
+          title: "Appointment Request Update",
+          message: `Your appointment request was not approved.${reason ? ` Reason: ${reason}` : ""}`,
+          type: "appointment_rejected",
+          link: "/patient/my-bookings",
+        });
+      }
+
+      return appointment;
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
+      throw new ApiError("Failed to reject appointment", 500);
     }
   }
 

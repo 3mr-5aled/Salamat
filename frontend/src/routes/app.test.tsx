@@ -59,6 +59,7 @@ vi.mock("@tanstack/react-query", () => {
   };
 });
 import { getDoctorProfile } from "../services/doctor";
+import { getPatientProfile } from "../services/patient";
 import {
   getAppointments,
   createAppointmentSlot,
@@ -68,6 +69,12 @@ import {
   getDoctorSlots,
   registerForAppointment,
 } from "../services/appointment";
+import { triageSymptoms, summarizeNotes } from "../services/ai";
+
+vi.mock("../services/ai", () => ({
+  triageSymptoms: vi.fn(),
+  summarizeNotes: vi.fn(),
+}));
 
 
 
@@ -493,6 +500,127 @@ describe("Patient Dashboard - Bookings & Prescription Tracking", () => {
       expect(screen.getByText("Common Cold")).toBeInTheDocument();
       expect(screen.getByText("Vitamin C")).toBeInTheDocument();
       expect(screen.getByText("1000mg")).toBeInTheDocument();
+    });
+  });
+
+  it("allows patient to use Check Symptoms tab and navigate to pre-filtered doctor list", async () => {
+    mockUser._id = "user-patient-123";
+    mockUser.role = "patient";
+    mockUser.name = "Frank Patient";
+    mockDataStore.patientProfile = { _id: "pat-abc", user: "user-patient-123", fullName: "Frank Patient" };
+    mockDataStore.doctors = [{ _id: "doc-1", fullName: "Dr. Heart", specialization: "Cardiology", isAvailableToday: true }];
+
+    vi.mocked(getPatientProfile).mockResolvedValue(mockDataStore.patientProfile);
+    vi.mocked(triageSymptoms).mockResolvedValue({
+      specialty: "Cardiology",
+      confidence: 90,
+      urgency: "High",
+      explanation: "Chest pain requires cardiac evaluation."
+    });
+
+    const Component = Route.options.component!;
+    await act(async () => {
+      renderWithQueryClient(<Component />);
+    });
+
+    // Click Check Symptoms tab
+    const checkSymptomsBtn = await screen.findByRole("button", { name: /Check Symptoms/i });
+    fireEvent.click(checkSymptomsBtn);
+
+    // Type symptoms into textarea
+    const textarea = screen.getByLabelText(/Describe Your Symptoms/i);
+    fireEvent.change(textarea, { target: { value: "Chest pain with shortness of breath" } });
+
+    // Click Analyze button
+    const analyzeBtn = screen.getByRole("button", { name: /Analyze Symptoms/i });
+    fireEvent.click(analyzeBtn);
+
+    await waitFor(() => {
+      expect(triageSymptoms).toHaveBeenCalledWith("Chest pain with shortness of breath");
+      expect(screen.getByText("Cardiology")).toBeInTheDocument();
+      expect(screen.getByText("Chest pain requires cardiac evaluation.")).toBeInTheDocument();
+    });
+
+    // Click Find Cardiology Doctors button
+    const findCardioBtn = screen.getByRole("button", { name: /Find Cardiology Doctors/i });
+    fireEvent.click(findCardioBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText("Dr. Heart")).toBeInTheDocument();
+    });
+  });
+
+  it("allows doctor to structure notes with AI and apply SOAP note format", async () => {
+    mockUser._id = "user-doc-123";
+    mockUser.role = "doctor";
+    mockUser.name = "Dr. Smith";
+    mockDataStore.doctorProfile = { _id: "doc-123", clinic: "clinic-1" };
+    mockDataStore.doctorSlots = [{
+      _id: "slot-99",
+      date: "2026-07-01",
+      startTime: "10:00",
+      endTime: "11:00",
+      status: "open",
+      registeredPatientsCount: 1,
+      maxPatients: 5,
+    }];
+    mockDataStore.patientAppointments = [{
+      _id: "slot-99",
+      date: "2026-07-01",
+      status: "open",
+      patient: [{
+        patientId: { _id: "pat-99", fullName: "Jane Doe", email: "jane@test.com" },
+        registrationStatus: "approved",
+        symptoms: "Fever and sore throat"
+      }]
+    }];
+
+    vi.mocked(getDoctorProfile).mockResolvedValue(mockDataStore.doctorProfile);
+    vi.mocked(getDoctorSlots).mockResolvedValue(mockDataStore.doctorSlots);
+    vi.mocked(getAppointments).mockResolvedValue(mockDataStore.patientAppointments);
+    vi.mocked(summarizeNotes).mockResolvedValue({
+      soap: {
+        subjective: "Patient has fever",
+        objective: "Temp 38.5C",
+        assessment: "Viral infection",
+        plan: "Hydration and antipyretics"
+      },
+      prescriptions: []
+    });
+
+    const Component = Route.options.component!;
+    await act(async () => {
+      renderWithQueryClient(<Component />);
+    });
+
+    // Go to Patient Visits tab
+    const visitsTabBtn = await screen.findByRole("button", { name: /Patient Visits/i });
+    fireEvent.click(visitsTabBtn);
+
+    // Click Start Consultation
+    const startConsultBtn = await screen.findByRole("button", { name: /Start Consultation/i });
+    fireEvent.click(startConsultBtn);
+
+    // Type notes into diagnosis textarea
+    const diagTextarea = screen.getByLabelText(/Clinical Diagnosis & Observations/i);
+    fireEvent.change(diagTextarea, { target: { value: "Patient presented with fever and sore throat" } });
+
+    // Click Structure with AI
+    const aiBtn = screen.getByRole("button", { name: /Structure with AI/i });
+    fireEvent.click(aiBtn);
+
+    await waitFor(() => {
+      expect(summarizeNotes).toHaveBeenCalledWith("Patient presented with fever and sore throat");
+      expect(screen.getByText("SOAP Note AI Preview")).toBeInTheDocument();
+    });
+
+    // Click Apply SOAP Note
+    const applyBtn = screen.getByRole("button", { name: /Apply SOAP Note/i });
+    fireEvent.click(applyBtn);
+
+    await waitFor(() => {
+      expect((diagTextarea as HTMLTextAreaElement).value).toContain("Subjective: Patient has fever");
+      expect((diagTextarea as HTMLTextAreaElement).value).toContain("Plan: Hydration and antipyretics");
     });
   });
 });

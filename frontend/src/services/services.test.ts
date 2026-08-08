@@ -13,6 +13,7 @@ import {
   rejectPatientRegistration,
   completeConsultation
 } from "./appointment";
+import { triageSymptoms, summarizeNotes } from "./ai";
 
 vi.mock("./api", () => ({
   default: {
@@ -139,6 +140,29 @@ describe("API Service wrappers", () => {
         notes: JSON.stringify({ dx: "Flu", rx: [{ m: "Aspirin" }] })
       });
       expect(result).toEqual({ _id: "slot-123" });
+    });
+  });
+
+  describe("AI Services", () => {
+    it("should call /ai/triage with symptoms and return data payload", async () => {
+      const mockResult = { specialty: "Cardiology", confidence: 95, urgency: "High", explanation: "Chest pain detected" };
+      vi.mocked(api.post).mockResolvedValue({ data: { status: "success", data: mockResult } });
+
+      const res = await triageSymptoms("Severe chest pain");
+      expect(api.post).toHaveBeenCalledWith("/ai/triage", { symptoms: "Severe chest pain" });
+      expect(res).toEqual(mockResult);
+    });
+
+    it("should call /ai/summarize with notes and return SOAP payload", async () => {
+      const mockResult = {
+        soap: { subjective: "Headache", objective: "Normal BP", assessment: "Migraine", plan: "Rest" },
+        prescriptions: []
+      };
+      vi.mocked(api.post).mockResolvedValue({ data: { status: "success", data: mockResult } });
+
+      const res = await summarizeNotes("Patient has migraine headache");
+      expect(api.post).toHaveBeenCalledWith("/ai/summarize", { notes: "Patient has migraine headache" });
+      expect(res).toEqual(mockResult);
     });
   });
 });

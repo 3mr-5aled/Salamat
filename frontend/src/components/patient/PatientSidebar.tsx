@@ -7,11 +7,14 @@ import {
   ChevronUp,
   Settings,
   User,
+  Sparkles,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import type { PatientTab } from "../../hooks/usePatientDashboard";
 import AppLogo from "../../assets/app-logo-transparent.png";
+
+import { NotificationBell } from "../NotificationBell";
 
 interface PatientSidebarProps {
   activeTab: PatientTab;
@@ -19,7 +22,8 @@ interface PatientSidebarProps {
 }
 
 const NAV_ITEMS: { tab: PatientTab; icon: React.ReactNode; label: string; mobileLabel: string }[] = [
-  { tab: "overview",     icon: <LayoutDashboard size={18} />, label: "Overview",          mobileLabel: "Overview" },
+  { tab: "overview",     icon: <LayoutDashboard size={18} />, label: "Overview",         mobileLabel: "Overview" },
+  { tab: "check-symptoms", icon: <Sparkles size={18} />,        label: "Check Symptoms",   mobileLabel: "Triage"   },
   { tab: "find-doctor",  icon: <Search size={18} />,          label: "Book Appointment",  mobileLabel: "Book"     },
   { tab: "bookings",     icon: <Calendar size={18} />,        label: "My Bookings",       mobileLabel: "Bookings" },
 ];
@@ -53,14 +57,17 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
       <aside className="w-64 bg-white border-r border-[#E2E8F0] flex flex-col hidden md:flex shrink-0">
 
         {/* Branding */}
-        <div className="flex items-center gap-3 px-6 py-5 border-b border-[#E2E8F0]">
-          <div className="p-1 bg-[#2563EB]/8 rounded-lg flex items-center justify-center">
-            <img src={AppLogo} alt="Salamat Logo" className="h-8 w-auto object-contain" />
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#E2E8F0]">
+          <div className="flex items-center gap-3">
+            <div className="p-1 bg-[#2563EB]/8 rounded-lg flex items-center justify-center">
+              <img src={AppLogo} alt="Salamat Logo" className="h-8 w-auto object-contain" />
+            </div>
+            <div>
+              <div className="text-base font-black text-[#0F172A] tracking-tight leading-tight">Salamat</div>
+              <div className="text-[10px] font-semibold text-[#16A34A] uppercase tracking-widest">Patient Portal</div>
+            </div>
           </div>
-          <div>
-            <div className="text-base font-black text-[#0F172A] tracking-tight leading-tight">Salamat</div>
-            <div className="text-[10px] font-semibold text-[#16A34A] uppercase tracking-widest">Patient Portal</div>
-          </div>
+          <NotificationBell />
         </div>
 
         {/* Nav Links */}

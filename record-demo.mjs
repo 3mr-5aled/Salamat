@@ -4,11 +4,12 @@
 import { chromium } from "playwright";
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 
 // ─── CREDENTIALS (from seed-all.js) ───────────────────────────────────────────
 const PATIENT_EMAIL = "mohamed@salamat.com";
 const PATIENT_PASSWORD = "PatientPassword123";
-const DOCTOR_EMAIL = "ahmed@salamat.com";
+const DOCTOR_EMAIL = "dr.ahmed@salamat.com";
 const DOCTOR_PASSWORD = "DoctorPassword123";
 const ADMIN_EMAIL = "admin@salamat.com";
 const ADMIN_PASSWORD = "AdminPassword123";
@@ -122,9 +123,315 @@ async function loginAs(page, baseUrl, email, password) {
   await sleep(1500);
 }
 
+// ─── INTRO & OUTRO SCENE RENDERERS ────────────────────────────────────────────
+async function renderIntroScene(page) {
+  console.log("  Scene 0.0 — Animated Intro Screen");
+  await page.setContent(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <title>Salamat - Intro</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          min-height: 100vh;
+          background: #0F172A;
+          color: #F8FAFC;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          position: relative;
+        }
+        .bg-glow {
+          position: absolute;
+          width: 650px;
+          height: 650px;
+          background: radial-gradient(circle, rgba(37,99,235,0.28) 0%, rgba(15,23,42,0) 70%);
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+        }
+        .card {
+          position: relative;
+          z-index: 10;
+          background: rgba(30, 41, 59, 0.75);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 24px;
+          padding: 48px;
+          max-width: 820px;
+          width: 90%;
+          text-align: center;
+          box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.6), 0 0 32px rgba(37, 99, 235, 0.2);
+          animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(24px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(37, 99, 235, 0.18);
+          border: 1px solid rgba(37, 99, 235, 0.35);
+          color: #60A5FA;
+          font-size: 12px;
+          font-weight: 700;
+          padding: 6px 16px;
+          border-radius: 9999px;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          margin-bottom: 24px;
+        }
+        .pulse-dot {
+          width: 8px;
+          height: 8px;
+          background-color: #60A5FA;
+          border-radius: 50%;
+          box-shadow: 0 0 8px #60A5FA;
+        }
+        h1 {
+          font-size: 44px;
+          font-weight: 900;
+          color: #FFFFFF;
+          margin-bottom: 12px;
+          letter-spacing: -0.5px;
+        }
+        .subtitle {
+          font-size: 17px;
+          color: #94A3B8;
+          line-height: 1.6;
+          margin-bottom: 32px;
+          max-width: 660px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .developer-box {
+          background: rgba(15, 23, 42, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 16px;
+          padding: 18px 24px;
+          margin-bottom: 32px;
+          display: inline-flex;
+          align-items: center;
+          gap: 16px;
+          text-align: left;
+        }
+        .avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #2563EB, #1D4ED8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 800;
+          font-size: 20px;
+          color: #FFF;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .dev-info h3 {
+          font-size: 16px;
+          font-weight: 700;
+          color: #F8FAFC;
+        }
+        .dev-info p {
+          font-size: 13px;
+          color: #60A5FA;
+          font-family: monospace;
+        }
+        .pills {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 10px;
+        }
+        .pill {
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #CBD5E1;
+          font-size: 12px;
+          font-weight: 600;
+          padding: 6px 14px;
+          border-radius: 8px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="bg-glow"></div>
+      <div class="card">
+        <div class="badge">
+          <div class="pulse-dot"></div>
+          <span>Full-Stack Healthcare System</span>
+        </div>
+        <h1>Salamat (سلامتك)</h1>
+        <p class="subtitle">
+          Comprehensive multi-role medical appointment management platform featuring Patient booking, Doctor schedule management, and Admin oversight.
+        </p>
+        
+        <div class="developer-box">
+          <div class="avatar">AM</div>
+          <div class="dev-info">
+            <h3>Amr Morcy</h3>
+            <p>GitHub: @3mr-5aled</p>
+          </div>
+        </div>
+
+        <div class="pills">
+          <span class="pill">React 18</span>
+          <span class="pill">TypeScript</span>
+          <span class="pill">Vite</span>
+          <span class="pill">TanStack Router</span>
+          <span class="pill">Node.js</span>
+          <span class="pill">Express</span>
+          <span class="pill">MongoDB</span>
+          <span class="pill">Mongoose</span>
+          <span class="pill">Playwright</span>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+  await sleep(4000);
+}
+
+async function renderOutroScene(page) {
+  console.log("  Scene 5.0 — Animated Outro Screen");
+  await page.setContent(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <title>Salamat - Outro</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+          min-height: 100vh;
+          background: #0F172A;
+          color: #F8FAFC;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          position: relative;
+        }
+        .bg-glow {
+          position: absolute;
+          width: 650px;
+          height: 650px;
+          background: radial-gradient(circle, rgba(37,99,235,0.28) 0%, rgba(15,23,42,0) 70%);
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+        }
+        .card {
+          position: relative;
+          z-index: 10;
+          background: rgba(30, 41, 59, 0.75);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 24px;
+          padding: 48px;
+          max-width: 720px;
+          width: 90%;
+          text-align: center;
+          box-shadow: 0 32px 64px -16px rgba(0, 0, 0, 0.6), 0 0 32px rgba(37, 99, 235, 0.2);
+          animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(24px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(22, 163, 74, 0.18);
+          border: 1px solid rgba(22, 163, 74, 0.35);
+          color: #4ADE80;
+          font-size: 12px;
+          font-weight: 700;
+          padding: 6px 16px;
+          border-radius: 9999px;
+          text-transform: uppercase;
+          letter-spacing: 1.5px;
+          margin-bottom: 24px;
+        }
+        h1 {
+          font-size: 44px;
+          font-weight: 900;
+          color: #FFFFFF;
+          margin-bottom: 12px;
+        }
+        .subtitle {
+          font-size: 18px;
+          color: #94A3B8;
+          margin-bottom: 32px;
+        }
+        .credit-box {
+          background: rgba(15, 23, 42, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 16px;
+          padding: 20px 28px;
+          display: inline-block;
+          margin-bottom: 16px;
+        }
+        .dev-name {
+          font-size: 18px;
+          font-weight: 700;
+          color: #F8FAFC;
+        }
+        .repo-link {
+          font-size: 14px;
+          color: #60A5FA;
+          font-family: monospace;
+          margin-top: 6px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="bg-glow"></div>
+      <div class="card">
+        <div class="badge">
+          <span>Demonstration Complete</span>
+        </div>
+        <h1>Thank You for Watching!</h1>
+        <p class="subtitle">Salamat Medical Appointment Management System</p>
+        
+        <div class="credit-box">
+          <div class="dev-name">Developed with ❤️ by Amr Morcy</div>
+          <div class="repo-link">github.com/3mr-5aled/Salamat</div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+  await sleep(4000);
+}
+
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 (async () => {
   console.log("🎬 Salamat Full-Feature Demo Recording — 52 Scenes");
+
+  console.log("🌱 Re-seeding database before recording...");
+  try {
+    execSync("npm run seed:all", { stdio: "inherit" });
+    console.log("✅ Database successfully re-seeded!");
+  } catch (seedErr) {
+    console.warn(
+      "⚠️ Warning: Seed script execution failed or skipped:",
+      seedErr.message,
+    );
+  }
 
   const outputDir = path.resolve("./demo-recordings");
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
@@ -146,6 +453,9 @@ async function loginAs(page, baseUrl, email, password) {
     // PART 0 — LANDING PAGE
     // ═══════════════════════════════════════════════════════════════════════
     console.log("\n📍 PART 0 — Landing Page");
+
+    // 0.0 — Intro Screen
+    await renderIntroScene(page);
 
     // 0.1 — Hero
     console.log("  Scene 0.1 — Hero section");
@@ -185,17 +495,37 @@ async function loginAs(page, baseUrl, email, password) {
     await smoothScroll(page, 700);
     await sleep(2000);
 
-    // 0.4 — Contact & Emergency
-    console.log("  Scene 0.4 — Contact & Emergency");
-    await smoothScroll(page, 700);
+    // 0.4 — Emergency Hotline & Public Contact
+    console.log("  Scene 0.4 — Emergency Hotline & Contact");
+    try {
+      await page.locator('#emergency').scrollIntoViewIfNeeded();
+      await sleep(600);
+    } catch {
+      await smoothScroll(page, 400);
+    }
     await updateHUD(page, {
-      step: "LANDING • EMERGENCY & CONTACT",
-      title: "Emergency Hotline & Public Contact Info",
+      step: "LANDING • EMERGENCY HOTLINE",
+      title: "24/7 Toll-Free Emergency Line (19999)",
       description:
-        "Emergency hotline (19999), hospital address, working hours, and social links are all publicly accessible without requiring login.",
+        "Critical emergency response coordinators and ambulances on standby — direct emergency hotline accessible right from the landing page.",
+      tag: "Emergency Hotline",
+    });
+    await sleep(1800);
+
+    try {
+      await page.locator('#contact').scrollIntoViewIfNeeded();
+      await sleep(600);
+    } catch {
+      await smoothScroll(page, 600);
+    }
+    await updateHUD(page, {
+      step: "LANDING • HOSPITAL CONTACT",
+      title: "Hospital Coordinates & Direct Support Channels",
+      description:
+        "Instant support via WhatsApp (+20 123 456 7890), Facebook Page, direct hospital phone lines, and address map directions.",
       tag: "Public Contact",
     });
-    await sleep(1400);
+    await sleep(1800);
 
     // ═══════════════════════════════════════════════════════════════════════
     // PART 1 — AUTHENTICATION
@@ -640,7 +970,7 @@ async function loginAs(page, baseUrl, email, password) {
     // 3.2 — Patient Visits tab
     console.log("  Scene 3.2 — Patient Visits tab");
     try {
-      await page.locator("text=Patient Visits, text=Visits").first().click();
+      await page.locator("text=Patient Visits").first().click();
       await sleep(700);
     } catch {
       /* ignore */
@@ -654,14 +984,14 @@ async function loginAs(page, baseUrl, email, password) {
     });
     await sleep(2000);
 
-    // 3.3 — Approve/Reject actions
-    console.log("  Scene 3.3 — Approve patient");
+    // 3.3 — Patient Queue & Session Review
+    console.log("  Scene 3.3 — Patient Queue");
     await updateHUD(page, {
-      step: "DOCTOR • BOOKING APPROVAL CONTROLS",
-      title: "One-Click Approve or Reject Booking",
+      step: "DOCTOR • PATIENT VISIT MANAGEMENT",
+      title: "Patient Visit Details & Clinical Queue",
       description:
-        "Doctors approve or reject patient registration requests. Rejected bookings require an inline reason. Patient receives a real-time notification upon status change.",
-      tag: "Approval Workflow",
+        "Doctors review patient session details and health history. Registrations are approved by Admin prior to consultation.",
+      tag: "Patient Management",
     });
     await sleep(1800);
 
@@ -778,7 +1108,7 @@ async function loginAs(page, baseUrl, email, password) {
     // 3.9 — Consultation Hours tab
     console.log("  Scene 3.9 — Consultation Hours");
     try {
-      await page.locator("text=Consultation Hours, text=Hours").first().click();
+      await page.locator("text=Consultation Hours").first().click();
       await sleep(700);
     } catch {
       /* ignore */
@@ -806,7 +1136,7 @@ async function loginAs(page, baseUrl, email, password) {
     // 3.11 — My Patients Directory
     console.log("  Scene 3.11 — Patient Directory");
     try {
-      await page.locator("text=My Patients, text=Patients").first().click();
+      await page.locator("text=My Patients").first().click();
       await sleep(700);
     } catch {
       /* ignore */
@@ -880,14 +1210,24 @@ async function loginAs(page, baseUrl, email, password) {
 
     // 4.1 — Admin Overview
     console.log("  Scene 4.1 — Admin Overview");
+    try {
+      await page.waitForSelector('.grid, [data-testid="admin-dashboard-stats"]', { timeout: 8000 });
+      await sleep(600);
+    } catch {
+      await sleep(1500);
+    }
     await updateHUD(page, {
       step: "ADMIN • OPERATIONS DASHBOARD",
       title: "Unified Admin Operations Dashboard",
       description:
-        "Live metrics: Total Clinics, Active Doctors, Registered Patients, Total Appointments — all fetched from the API. System Health monitor shows module status and version v1.0.0.",
+        "Live metrics: Total Clinics, Active Doctors, Registered Patients, Total Appointments — all fetched live from the API. System Health monitor shows module status and version v1.0.0.",
       tag: "Admin Dashboard",
     });
     await sleep(2000);
+    await smoothScroll(page, 450);
+    await sleep(2500);
+    await smoothScroll(page, -450);
+    await sleep(1200);
 
     // 4.2 — Quick Booking
     console.log("  Scene 4.2 — Quick Booking");
@@ -909,19 +1249,22 @@ async function loginAs(page, baseUrl, email, password) {
     });
     await sleep(2000);
     try {
-      await page.locator('button:has-text("Cancel")').last().click();
+      await page
+        .locator(
+          'button:has(span:has-text("Close")), button:has-text("Close"), button:has-text("Cancel")',
+        )
+        .first()
+        .click();
       await sleep(350);
     } catch {
-      /* ignore */
+      await page.keyboard.press("Escape");
+      await sleep(350);
     }
 
     // 4.3 — Pending Approvals tab
     console.log("  Scene 4.3 — Pending Approvals");
     try {
-      await page
-        .locator("text=Pending Approvals, text=Approvals, text=approvals")
-        .first()
-        .click();
+      await page.locator("text=Pending Approvals").first().click();
       await sleep(700);
     } catch {
       /* ignore */
@@ -946,13 +1289,57 @@ async function loginAs(page, baseUrl, email, password) {
     });
     await sleep(1600);
 
-    // 4.5 — Clinics Registry tab
-    console.log("  Scene 4.5 — Clinics Registry");
+    // 4.5 — Doctors Directory tab
+    console.log("  Scene 4.5 — Doctors Directory");
     try {
-      await page.locator("text=Clinics, text=Clinics Registry").first().click();
+      await page.locator('button:has-text("doctors"), button:has-text("Doctors")').first().click();
       await sleep(700);
     } catch {
       /* ignore */
+    }
+    await updateHUD(page, {
+      step: "ADMIN • DOCTORS DIRECTORY",
+      title: "Full Doctor Management with CRUD",
+      description:
+        "Table shows all 5 doctors: name, specialization, experience, clinic location, qualifications. Add new doctor accounts or edit existing profiles including weekly practice hours.",
+      tag: "Doctor Management",
+    });
+    await sleep(2000);
+
+    // 4.6 — Add Doctor modal
+    console.log("  Scene 4.6 — Add Doctor modal");
+    try {
+      await page.locator('button:has-text("Add Doctor")').first().click();
+      await sleep(600);
+    } catch {
+      /* ignore */
+    }
+    await updateHUD(page, {
+      step: "ADMIN • CREATE DOCTOR ACCOUNT",
+      title: "Doctor Profile: Credentials, Specialty & Schedule",
+      description:
+        "Create a full doctor account: name, email, specialization (11 options), clinic assignment, gender, date of birth, and weekly availability schedule per day of the week.",
+      tag: "Doctor Creation",
+    });
+    await sleep(2200);
+    try {
+      await page.locator('button:has-text("Cancel")').last().click();
+      await sleep(350);
+    } catch {
+      console.warn(
+        "  ⚠ Cancel button not found — skipping modal close (may be disabled in this build)",
+      );
+    }
+
+    // 4.7 — Clinics Registry tab
+    console.log("  Scene 4.7 — Clinics Registry");
+    try {
+      await page.locator('button:has-text("clinics"), button:has-text("Clinics")').first().click();
+      await sleep(700);
+    } catch {
+      console.warn(
+        "  ⚠ Clinics tab not found — skipping clinic registry scene (may be disabled in this build)",
+      );
     }
     await updateHUD(page, {
       step: "ADMIN • CLINICS REGISTRY",
@@ -963,8 +1350,8 @@ async function loginAs(page, baseUrl, email, password) {
     });
     await sleep(2000);
 
-    // 4.6 — Add Clinic modal
-    console.log("  Scene 4.6 — Add Clinic modal");
+    // 4.8 — Add Clinic modal
+    console.log("  Scene 4.8 — Add Clinic modal");
     try {
       await page.locator('button:has-text("Add Clinic")').first().click();
       await sleep(600);
@@ -991,8 +1378,8 @@ async function loginAs(page, baseUrl, email, password) {
       /* ignore */
     }
 
-    // 4.7 — Assign Doctor to clinic
-    console.log("  Scene 4.7 — Assign Doctor");
+    // 4.9 — Assign Doctor to clinic
+    console.log("  Scene 4.9 — Assign Doctor");
     try {
       await page.locator('button:has-text("Assign Doctor")').first().click();
       await sleep(700);
@@ -1017,56 +1404,10 @@ async function loginAs(page, baseUrl, email, password) {
       /* ignore */
     }
 
-    // 4.8 — Doctors Directory tab
-    console.log("  Scene 4.8 — Doctors Directory");
-    try {
-      await page
-        .locator("text=Doctors, text=Doctors Directory")
-        .first()
-        .click();
-      await sleep(700);
-    } catch {
-      /* ignore */
-    }
-    await updateHUD(page, {
-      step: "ADMIN • DOCTORS DIRECTORY",
-      title: "Full Doctor Management with CRUD",
-      description:
-        "Table shows all 5 doctors: name, specialization, experience, clinic location, qualifications. Add new doctor accounts or edit existing profiles including weekly practice hours.",
-      tag: "Doctor Management",
-    });
-    await sleep(2000);
-
-    // 4.9 — Add Doctor modal
-    console.log("  Scene 4.9 — Add Doctor modal");
-    try {
-      await page.locator('button:has-text("Add Doctor")').first().click();
-      await sleep(600);
-    } catch {
-      /* ignore */
-    }
-    await updateHUD(page, {
-      step: "ADMIN • CREATE DOCTOR ACCOUNT",
-      title: "Doctor Profile: Credentials, Specialty & Schedule",
-      description:
-        "Create a full doctor account: name, email, specialization (11 options), clinic assignment, gender, date of birth, and weekly availability schedule per day of the week.",
-      tag: "Doctor Creation",
-    });
-    await sleep(2200);
-    try {
-      await page.locator('button:has-text("Cancel")').last().click();
-      await sleep(350);
-    } catch {
-      /* ignore */
-    }
-
     // 4.10 — Patients Directory tab
     console.log("  Scene 4.10 — Patients Directory");
     try {
-      await page
-        .locator("text=Patients, text=Patients Directory")
-        .first()
-        .click();
+      await page.locator('button:has-text("patients"), button:has-text("Patients")').first().click();
       await sleep(700);
     } catch {
       /* ignore */
@@ -1103,7 +1444,7 @@ async function loginAs(page, baseUrl, email, password) {
     // 4.12 — Consultation Sessions tab
     console.log("  Scene 4.12 — Consultation Sessions");
     try {
-      await page.locator("text=Sessions, text=Slots").first().click();
+      await page.locator("text=Slots").first().click();
       await sleep(700);
     } catch {
       /* ignore */
@@ -1147,17 +1488,17 @@ async function loginAs(page, baseUrl, email, password) {
     // 4.14 — Messages tab
     console.log("  Scene 4.14 — Admin Messages Inbox");
     try {
-      await page.locator("text=Messages, text=Inbox").first().click();
+      await page.locator("text=Doctor Messages").first().click();
       await sleep(700);
     } catch {
       /* ignore */
     }
     await updateHUD(page, {
       step: "ADMIN • DOCTOR INQUIRY INBOX",
-      title: "Doctor & Patient Messages Inbox",
+      title: "Doctor Messages & Facility Requests Inbox",
       description:
-        "All messages from doctors and patients. 1 unread message from Dr. Ahmed Hassan requesting cardiology equipment maintenance. Filter by All / Unread / Read.",
-      tag: "Messaging Inbox",
+        "Admin message hub reserved exclusively for Doctor communications (equipment requests, facility support, schedule adjustments). Patients contact support directly via Hotline, WhatsApp, or Facebook.",
+      tag: "Doctor Messaging",
     });
     await sleep(2000);
 
@@ -1182,16 +1523,7 @@ async function loginAs(page, baseUrl, email, password) {
     // OUTRO
     // ═══════════════════════════════════════════════════════════════════════
     console.log("\n📍 OUTRO — Wrap Up");
-    await page.goto(BASE, { waitUntil: "networkidle" });
-    await updateHUD(page, {
-      step: "OUTRO • SALAMAT MEDICAL PLATFORM",
-      title: "Salamat — Empowering Healthcare End to End",
-      description:
-        "From AI symptom triage to digital prescriptions and admin oversight — Salamat delivers a complete, role-based medical appointment experience built on React + TypeScript + Express + MongoDB.",
-      tag: "React • TypeScript • Express • MongoDB",
-    });
-    await smoothScroll(page, -9999);
-    await sleep(2000);
+    await renderOutroScene(page);
 
     console.log("\n✅ All 52 scenes recorded successfully!");
   } catch (err) {

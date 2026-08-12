@@ -126,6 +126,16 @@ async function loginAs(page, baseUrl, email, password) {
 // ─── INTRO & OUTRO SCENE RENDERERS ────────────────────────────────────────────
 async function renderIntroScene(page) {
   console.log("  Scene 0.0 — Animated Intro Screen");
+  let devLogoDataUri = "";
+  try {
+    const logoPath = path.resolve("./dev-logo.png");
+    if (fs.existsSync(logoPath)) {
+      devLogoDataUri = `data:image/png;base64,${fs.readFileSync(logoPath).toString("base64")}`;
+    }
+  } catch {
+    /* ignore */
+  }
+
   await page.setContent(`
     <!DOCTYPE html>
     <html lang="en">
@@ -214,27 +224,22 @@ async function renderIntroScene(page) {
         }
         .developer-box {
           background: rgba(15, 23, 42, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 16px;
-          padding: 18px 24px;
+          padding: 16px 24px;
           margin-bottom: 32px;
           display: inline-flex;
           align-items: center;
           gap: 16px;
           text-align: left;
         }
-        .avatar {
+        .dev-logo-img {
           width: 48px;
           height: 48px;
           border-radius: 12px;
-          background: linear-gradient(135deg, #2563EB, #1D4ED8);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 800;
-          font-size: 20px;
-          color: #FFF;
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+          object-fit: cover;
+          box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+          border: 1px solid rgba(255, 255, 255, 0.15);
         }
         .dev-info h3 {
           font-size: 16px;
@@ -245,6 +250,7 @@ async function renderIntroScene(page) {
           font-size: 13px;
           color: #60A5FA;
           font-family: monospace;
+          margin-top: 2px;
         }
         .pills {
           display: flex;
@@ -276,10 +282,10 @@ async function renderIntroScene(page) {
         </p>
         
         <div class="developer-box">
-          <div class="avatar">AM</div>
+          ${devLogoDataUri ? `<img src="${devLogoDataUri}" alt="Developer Logo" class="dev-logo-img" />` : '<div class="avatar">AM</div>'}
           <div class="dev-info">
-            <h3>Amr Morcy</h3>
-            <p>GitHub: @3mr-5aled</p>
+            <h3>Amr Morcy (@3mr-5aled)</h3>
+            <p>https://github.com/3mr-5aled/Salamat</p>
           </div>
         </div>
 

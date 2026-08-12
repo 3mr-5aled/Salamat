@@ -19,6 +19,12 @@ import {
   Shield,
   Activity,
   ArrowLeft,
+  PhoneCall,
+  Mail,
+  MapPin,
+  HeartPulse,
+  MessageSquare,
+  ArrowRight,
 } from "lucide-react";
 import { SymptomTriageTab } from "./SymptomTriageTab";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card";
@@ -109,6 +115,7 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
     slotDateFilter,
     setSlotDateFilter,
     docSlots,
+    isLoadingSlots,
     bookingMsg,
     setSymptoms,
     bookings,
@@ -250,6 +257,122 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                 >
                   View Registered Bookings
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Emergency & Hospital Support Section */}
+          <Card className="rounded-2xl border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)] overflow-hidden">
+            <CardHeader className="bg-[#DC2626] text-white p-6 md:p-8 relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative z-10">
+                <div className="space-y-2 max-w-xl">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 border border-white/20 text-xs font-bold uppercase tracking-wider text-white">
+                    <HeartPulse size={14} className="animate-pulse" />
+                    <span>24/7 Emergency Assistance</span>
+                  </div>
+                  <h3 className="text-2xl font-black text-white tracking-tight">
+                    Need Urgent Medical Care?
+                  </h3>
+                  <p className="text-xs text-red-100 font-medium leading-relaxed">
+                    Our emergency response coordinators and fully-equipped ambulances are on standby. Reach out directly for instantaneous assistance.
+                  </p>
+                </div>
+                <a
+                  href="tel:19999"
+                  className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-white text-[#DC2626] hover:bg-red-50 font-black text-base rounded-xl shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all shrink-0 cursor-pointer"
+                >
+                  <PhoneCall size={20} />
+                  <span>Call Hotline: 19999</span>
+                </a>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 bg-slate-50/50 space-y-6">
+              <div>
+                <h4 className="text-sm font-bold text-[#0F172A] tracking-tight">
+                  Direct Support Channels
+                </h4>
+                <p className="text-xs text-[#64748B] mt-0.5">
+                  Reach hospital administration and patient care coordinators through any of our official channels.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* WhatsApp */}
+                <a
+                  href="https://wa.me/201234567890"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 bg-white rounded-xl border border-slate-200/80 hover:border-[#25D366]/40 hover:bg-[#25D366]/5 transition-all group flex items-start gap-3.5"
+                >
+                  <div className="p-2.5 bg-[#25D366]/10 text-[#25D366] rounded-lg shrink-0 group-hover:bg-[#25D366] group-hover:text-white transition-colors">
+                    <MessageSquare size={18} />
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <h5 className="text-xs font-bold text-[#0F172A]">WhatsApp Support</h5>
+                    <p className="text-xs text-[#64748B] font-mono">+20 123 456 7890</p>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#25D366]">
+                      Message us <ArrowRight size={12} />
+                    </span>
+                  </div>
+                </a>
+
+                {/* Facebook */}
+                <a
+                  href="https://facebook.com/salamathospital"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 bg-white rounded-xl border border-slate-200/80 hover:border-[#1877F2]/40 hover:bg-[#1877F2]/5 transition-all group flex items-start gap-3.5"
+                >
+                  <div className="p-2.5 bg-[#1877F2]/10 text-[#1877F2] rounded-lg shrink-0 group-hover:bg-[#1877F2] group-hover:text-white transition-colors">
+                    <Mail size={18} />
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <h5 className="text-xs font-bold text-[#0F172A]">Facebook Page</h5>
+                    <p className="text-xs text-[#64748B]">@salamathospital</p>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1877F2]">
+                      Visit Page <ArrowRight size={12} />
+                    </span>
+                  </div>
+                </a>
+
+                {/* Phone & Desk */}
+                <div className="p-4 bg-white rounded-xl border border-slate-200/80 flex items-start gap-3.5 md:col-span-2 lg:col-span-1">
+                  <div className="p-2.5 bg-[#2563EB]/10 text-[#2563EB] rounded-lg shrink-0">
+                    <PhoneCall size={18} />
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h5 className="text-xs font-bold text-[#0F172A]">Phone Lines</h5>
+                    <p className="text-xs text-[#64748B] font-medium">+20 (2) 2345 6789</p>
+                    <p className="text-xs text-[#64748B] font-medium">+20 100 234 5678</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Location & Operating Hours */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200/60">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-slate-200/60 text-[#0F172A] rounded-lg shrink-0">
+                    <MapPin size={16} />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-[#0F172A]">Hospital Location</h5>
+                    <p className="text-xs text-[#64748B] mt-0.5">
+                      123 El-Nasr St, Maadi, Cairo Governorate, Egypt
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-slate-200/60 text-[#0F172A] rounded-lg shrink-0">
+                    <Clock size={16} />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-[#0F172A]">Operating Hours</h5>
+                    <p className="text-xs text-[#64748B] mt-0.5">
+                      Outpatient: 8:00 AM - 10:00 PM | Emergency Ward: 24/7 Daily
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -560,28 +683,43 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                   };
 
                   const uniqueSlotDates: string[] = (() => {
-                    const days = [];
                     const now = new Date();
-                    for (let i = 0; i < 5; i++) {
-                      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-                      days.push(toLocalDateString(d));
-                    }
-                    return days;
+                    const dateSet = new Set<string>();
+
+                    (docSlots || []).forEach((slot: any) => {
+                      const [slotHour, slotMin] = (slot.time || "00:00").split(":").map(Number);
+                      const slotDateObj = new Date(slot.date);
+                      const slotStart = new Date(
+                        slotDateObj.getFullYear(),
+                        slotDateObj.getMonth(),
+                        slotDateObj.getDate(),
+                        slotHour,
+                        slotMin,
+                        0
+                      );
+                      if (slotStart >= now) {
+                        dateSet.add(toLocalDateString(slotDateObj));
+                      }
+                    });
+
+                    return Array.from(dateSet).sort();
                   })();
 
                   const getDayLabel = (dStr: string) => {
                     const now = new Date();
                     const todayStr = toLocalDateString(now);
-                    const tomorrowStr = toLocalDateString(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
+                    const tomorrowStr = toLocalDateString(
+                      new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+                    );
 
                     if (dStr === todayStr) return "Today";
                     if (dStr === tomorrowStr) return "Tomorrow";
 
                     const [y, m, day] = dStr.split("-").map(Number);
                     return new Date(y, m - 1, day).toLocaleDateString(undefined, {
+                      weekday: "short",
                       month: "short",
                       day: "numeric",
-                      weekday: "short",
                     });
                   };
 
@@ -597,17 +735,20 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                           onChange={(e) => setSlotDateFilter(e.target.value)}
                           className="w-44 rounded-xl border-slate-200 text-xs h-9 focus:border-[#2563EB]"
                         />
-                        {slotDateFilter && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSlotDateFilter("")}
-                            className="h-9 px-3 text-xs text-slate-600 rounded-xl cursor-pointer"
-                          >
-                            All Dates
-                          </Button>
-                        )}
-                        {uniqueSlotDates.map((dStr: any) => (
+                        <Button
+                          type="button"
+                          variant={!slotDateFilter ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSlotDateFilter("")}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            !slotDateFilter
+                              ? "bg-[#2563EB] text-white shadow-sm"
+                              : "bg-slate-100 text-slate-600 border-0 hover:bg-slate-200"
+                          }`}
+                        >
+                          All Available Dates
+                        </Button>
+                        {uniqueSlotDates.map((dStr: string) => (
                           <Button
                             key={dStr}
                             type="button"
@@ -633,7 +774,34 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                   <Label className="text-xs font-bold text-[#0F172A] block uppercase tracking-wider">
                     2. Choose Preferred Slot {slotDateFilter ? `for ${slotDateFilter}` : "(All Available Dates)"}
                   </Label>
-                  {(() => {
+
+                  {/* Slot loading skeleton */}
+                  {isLoadingSlots ? (
+                    <div className="space-y-6">
+                      {[0, 1].map((g) => (
+                        <div key={g} className="space-y-3">
+                          <div className="h-8 bg-slate-100 rounded-xl animate-pulse w-56" />
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {[0, 1, 2, 3, 4, 5].map((i) => (
+                              <div
+                                key={i}
+                                className="p-4 rounded-2xl border border-slate-100 bg-slate-50 space-y-3 animate-pulse"
+                              >
+                                <div className="flex justify-between">
+                                  <div className="h-3 bg-slate-200 rounded w-20" />
+                                  <div className="h-3 bg-slate-200 rounded w-14" />
+                                </div>
+                                <div className="h-3 bg-slate-200 rounded w-24" />
+                                <div className="h-3 bg-slate-200 rounded w-16" />
+                                <div className="h-7 bg-slate-200 rounded-xl w-full mt-2" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                  <>{(() => {
                     const toLocalDateString = (d: Date) => {
                       const y = d.getFullYear();
                       const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -806,7 +974,8 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
                         ))}
                       </div>
                     );
-                  })()}
+                  })()}</>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -841,7 +1010,12 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
             const now = new Date();
             // Active: future pending or scheduled appointments
             const active = bookings.filter((b: any) => {
-              const isPast = b.date ? new Date(b.date) < now : false;
+              let isPast = false;
+              if (b.date) {
+                const apptDate = new Date(b.date);
+                apptDate.setHours(23, 59, 59, 999);
+                isPast = apptDate < now;
+              }
               if (isPast) return false;
               if (b.status === "Cancelled" || b.sessionStatus === "Cancelled" || b.registrationStatus === "rejected") return false;
               if (b.status === "Completed") return false;
@@ -1004,13 +1178,66 @@ export const PatientTabs: React.FC<PatientTabsProps> = ({ patient, user }) => {
             return (
               <div className="space-y-6">
                 {/* Active Bookings */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Active & Pending Visits</h3>
-                  {active.length > 0 ? (
-                    <div className="space-y-4">
-                      {active.map(renderBookingCard)}
-                    </div>
-                  ) : (
+                <div className="space-y-5">
+                  {/* Pending Approval subsection */}
+                  {(() => {
+                    const pending = active.filter(
+                      (b: any) =>
+                        b.registrationStatus !== "approved" &&
+                        b.status !== "Scheduled"
+                    );
+                    if (pending.length === 0) return null;
+                    return (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
+                          </span>
+                          <h3 className="text-sm font-bold text-amber-600 uppercase tracking-wider">
+                            Awaiting Admin Approval
+                          </h3>
+                          <span className="text-[10px] font-bold bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full">
+                            {pending.length} pending
+                          </span>
+                        </div>
+                        <div className="rounded-2xl border border-amber-100 bg-amber-50/40 p-1 space-y-2">
+                          {pending.map(renderBookingCard)}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Confirmed / Scheduled subsection */}
+                  {(() => {
+                    const confirmed = active.filter(
+                      (b: any) =>
+                        b.registrationStatus === "approved" ||
+                        b.status === "Scheduled"
+                    );
+                    if (confirmed.length === 0) return null;
+                    return (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <span className="relative flex h-2.5 w-2.5">
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#16A34A]" />
+                          </span>
+                          <h3 className="text-sm font-bold text-[#16A34A] uppercase tracking-wider">
+                            Confirmed Visits
+                          </h3>
+                          <span className="text-[10px] font-bold bg-[#16A34A]/10 text-[#16A34A] px-2 py-0.5 rounded-full">
+                            {confirmed.length} scheduled
+                          </span>
+                        </div>
+                        <div className="space-y-4">
+                          {confirmed.map(renderBookingCard)}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Nothing active at all */}
+                  {active.length === 0 && (
                     <div className="text-center p-8 bg-white border border-dashed border-slate-200 rounded-2xl">
                       <p className="text-xs text-slate-400 font-semibold">No active or pending appointments.</p>
                     </div>

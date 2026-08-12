@@ -39,8 +39,8 @@ exports.signupValidator = [
 
   check("role")
     .optional()
-    .isIn(["patient", "doctor", "admin"])
-    .withMessage("Role must be either patient, doctor, or admin"),
+    .isIn(["patient"])
+    .withMessage("Self-signup is only available for patients. Doctor profiles must be created by administrators."),
 
   check("phone")
     .optional()

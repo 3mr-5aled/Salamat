@@ -13,7 +13,6 @@ import {
   Lock,
   UserPlus,
   AlertCircle,
-  ChevronDown,
   Award,
   Clock
 } from "lucide-react";
@@ -27,21 +26,10 @@ const signupSchema = zod
     email: zod.string().email("Invalid email address"),
     password: zod.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: zod.string(),
-    role: zod.enum(["patient", "doctor"]),
-    specialization: zod.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-  })
-  .refine((data) => {
-    if (data.role === "doctor" && (!data.specialization || data.specialization.trim() === "")) {
-      return false;
-    }
-    return true;
-  }, {
-    message: "Specialization is required for doctors",
-    path: ["specialization"],
   });
 
 type SignupSchema = zod.infer<typeof signupSchema>;
@@ -60,15 +48,10 @@ function SignupComponent() {
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<SignupSchema>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { role: "patient", specialization: "" },
   });
-
-  const selectedRole = watch("role");
 
   React.useEffect(() => {
     if (isAuthenticated) {
@@ -79,22 +62,14 @@ function SignupComponent() {
   const onSubmit = async (data: SignupSchema) => {
     try {
       setError(null);
-      const signupArgs: [string, string, string, string, string, string?] = [
+      await signup(
         data.fullName,
         data.email,
         data.password,
         data.confirmPassword,
-        data.role,
-      ];
-      if (data.role === "doctor" && data.specialization) {
-        signupArgs.push(data.specialization);
-      }
-      await signup(...signupArgs);
-      if (data.role === "doctor") {
-        navigate({ to: "/app/waiting-for-verification" });
-      } else {
-        navigate({ to: "/app" });
-      }
+        "patient"
+      );
+      navigate({ to: "/app" });
     } catch (err: any) {
       if (err?.response?.data) {
         if (err.response.data.message) {
@@ -194,9 +169,6 @@ function SignupComponent() {
               </div>
             )}
 
-            {/* Hidden role input for react-hook-form schema compatibility */}
-            <input type="hidden" {...register("role")} />
-
             {/* Full Name */}
             <div className="space-y-1.5">
               <Label htmlFor="fullName" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -288,82 +260,6 @@ function SignupComponent() {
                 </p>
               )}
             </div>
-
-            {/* Role Select Button Tabs */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Sign Up As</Label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setValue("role", "patient");
-                    setValue("specialization", "");
-                  }}
-                  className={`h-11 rounded-xl font-bold text-xs cursor-pointer border flex items-center justify-center gap-2 transition-all duration-200 ${
-                    selectedRole === "patient"
-                      ? "bg-[#2563EB]/10 border-[#2563EB] text-[#2563EB]"
-                      : "bg-white border-slate-200 text-[#64748B] hover:bg-slate-50 hover:border-slate-300"
-                  }`}
-                >
-                  <User size={14} />
-                  <span>Patient</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setValue("role", "doctor")}
-                  className={`h-11 rounded-xl font-bold text-xs cursor-pointer border flex items-center justify-center gap-2 transition-all duration-200 ${
-                    selectedRole === "doctor"
-                      ? "bg-[#2563EB]/10 border-[#2563EB] text-[#2563EB]"
-                      : "bg-white border-slate-200 text-[#64748B] hover:bg-slate-50 hover:border-slate-300"
-                  }`}
-                >
-                  <Award size={14} />
-                  <span>Doctor</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Specialization (only for doctors) - smooth slide animation */}
-            {selectedRole === "doctor" && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                transition={{ duration: 0.3 }}
-                className="space-y-1.5 overflow-hidden"
-              >
-                <Label htmlFor="specialization" className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Specialization
-                </Label>
-                <div className="relative">
-                  <Award className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <select
-                    id="specialization"
-                    className="w-full pl-10 pr-10 rounded-xl border border-slate-200 bg-white text-xs py-2.5 focus:border-[#2563EB] outline-none appearance-none cursor-pointer text-[#0F172A] font-semibold h-11"
-                    {...register("specialization")}
-                  >
-                    <option value="">Select Specialty</option>
-                    <option value="Cardiology">Cardiology</option>
-                    <option value="Pediatrics">Pediatrics</option>
-                    <option value="Orthopedics">Orthopedics</option>
-                    <option value="Oncology">Oncology</option>
-                    <option value="Neurology">Neurology</option>
-                    <option value="Obstetrics and Gynecology">Obstetrics and Gynecology</option>
-                    <option value="Dermatology">Dermatology</option>
-                    <option value="Ophthalmology">Ophthalmology</option>
-                    <option value="ENT (Otolaryngology)">ENT (Otolaryngology)</option>
-                    <option value="Dental">Dental</option>
-                    <option value="Internal Medicine">Internal Medicine</option>
-                  </select>
-                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
-                </div>
-                {errors.specialization && (
-                  <p className="text-[11px] text-[#DC2626] mt-1 flex items-center gap-1.5 font-bold">
-                    <AlertCircle size={12} />
-                    <span>{errors.specialization.message}</span>
-                  </p>
-                )}
-              </motion.div>
-            )}
 
             <Button
               className="w-full h-11 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl font-bold cursor-pointer transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-[0.98] mt-2"

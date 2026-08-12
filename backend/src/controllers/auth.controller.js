@@ -41,21 +41,29 @@ exports.signup = asyncHandler(async (req, res, next) => {
     phone,
     gender,
     dateOfBirth,
-    specialization,
     bloodType,
     allergies,
     chronicDiseases,
   } = req.body;
 
+  if (role === "doctor") {
+    return next(
+      new ApiError(
+        "Self-signup is only available for patients. Doctor profiles must be created by administrators.",
+        400
+      )
+    );
+  }
+
   const cleanPhone = phone ? phone.replace(/^(\+2|002)/, "").replace(/\s/g, "") : undefined;
 
-  // 1- Create base user first (unverified by default)
+  // 1- Create base user first (unverified by default, role strictly patient)
   const user = await User.create({
     name: fullName,
     email,
     password, // Let the User model middleware handle hashing
     phone: cleanPhone,
-    role: role || "patient",
+    role: "patient",
     isVerified: false,
   });
 
@@ -67,7 +75,7 @@ exports.signup = asyncHandler(async (req, res, next) => {
     .digest("hex");
 
   user.passwordResetCode = hashedVerifyCode;
-  user.passwordResetExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours validity
+  user.passwordResetExpires = Date.now() + 15 * 60 * 1000; // 15 minutes validity
   user.passwordResetVerified = false;
   await user.save();
 
@@ -85,42 +93,30 @@ exports.signup = asyncHandler(async (req, res, next) => {
     logger.info(`[Verification Code Fallback] Email: ${user.email} | Code: ${verifyCode}`);
   }
 
-  // 2- Create role-specific profile
+  // 2- Create patient profile
   let roleProfile;
-  if (role === "doctor") {
-    roleProfile = await Doctor.create({
+  if (cleanPhone) {
+    roleProfile = await Patient.findOne({ phone: cleanPhone, user: { $exists: false } });
+  }
+  if (roleProfile) {
+    roleProfile.user = user._id;
+    roleProfile.fullName = fullName;
+    if (gender) roleProfile.gender = gender;
+    if (dateOfBirth) roleProfile.dateOfBirth = dateOfBirth;
+    if (bloodType) roleProfile.bloodType = bloodType;
+    await roleProfile.save();
+  } else {
+    roleProfile = await Patient.create({
       user: user._id,
       fullName,
-      slug: slugify(fullName, { lower: true }),
       gender,
       dateOfBirth,
-      specialization,
+      bloodType: bloodType || "Unknown",
+      allergies: allergies || [],
+      chronicDiseases: chronicDiseases || [],
+      medicalRecordNumber: generateMedicalRecordNumber(),
+      phone: cleanPhone,
     });
-  } else if (role === "patient" || !role) {
-    // Check if patient profile already exists with this phone but no user link
-    if (cleanPhone) {
-      roleProfile = await Patient.findOne({ phone: cleanPhone, user: { $exists: false } });
-    }
-    if (roleProfile) {
-      roleProfile.user = user._id;
-      roleProfile.fullName = fullName;
-      if (gender) roleProfile.gender = gender;
-      if (dateOfBirth) roleProfile.dateOfBirth = dateOfBirth;
-      if (bloodType) roleProfile.bloodType = bloodType;
-      await roleProfile.save();
-    } else {
-      roleProfile = await Patient.create({
-        user: user._id,
-        fullName,
-        gender,
-        dateOfBirth,
-        bloodType: bloodType || "Unknown",
-        allergies: allergies || [],
-        chronicDiseases: chronicDiseases || [],
-        medicalRecordNumber: generateMedicalRecordNumber(),
-        phone: cleanPhone,
-      });
-    }
   }
 
   // 3- Generate token
@@ -667,6 +663,35 @@ exports.getAdminMessages = asyncHandler(async (req, res, next) => {
   });
 });
 
+// @desc    Mark single admin message as read
+// @route   PATCH /api/v1/auth/admin-messages/:id/read
+// @access  Private (Admin)
+exports.markAdminMessageAsRead = asyncHandler(async (req, res, next) => {
+  const message = await AdminMessage.findByIdAndUpdate(
+    req.params.id,
+    { isRead: true },
+    { new: true }
+  );
+  if (!message) {
+    return next(new ApiError("Admin message not found", 404));
+  }
+  res.status(200).json({
+    status: "success",
+    data: message,
+  });
+});
+
+// @desc    Mark all admin messages as read
+// @route   PATCH /api/v1/auth/admin-messages/read-all
+// @access  Private (Admin)
+exports.markAllAdminMessagesAsRead = asyncHandler(async (req, res, next) => {
+  await AdminMessage.updateMany({ isRead: false }, { isRead: true });
+  res.status(200).json({
+    status: "success",
+    message: "All admin messages marked as read",
+  });
+});
+
 // @desc    Verify email using 6-digit verification code
 // @route   POST /api/v1/auth/verify-email
 // @access  Public
@@ -724,7 +749,7 @@ exports.resendVerificationEmail = asyncHandler(async (req, res, next) => {
     .digest("hex");
 
   user.passwordResetCode = hashedVerifyCode;
-  user.passwordResetExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  user.passwordResetExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
   user.passwordResetVerified = false;
   await user.save();
 

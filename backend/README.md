@@ -188,7 +188,7 @@ For detailed database schema information, see [DATABASE_SCHEMA.md](DATABASE_SCHE
 
 | Method | Endpoint                            | Description            | Auth Required |
 | ------ | ----------------------------------- | ---------------------- | ------------- |
-| POST   | `/api/v1/auth/signup`               | Register new user      | No            |
+| POST   | `/api/v1/auth/signup`               | Register new patient   | No            |
 | POST   | `/api/v1/auth/login`                | Login user             | No            |
 | POST   | `/api/v1/auth/forgotPassword`       | Request password reset | No            |
 | PUT    | `/api/v1/auth/resetPassword/:token` | Reset password         | No            |

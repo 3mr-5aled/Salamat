@@ -22,8 +22,7 @@ interface AuthContextType {
     email: string,
     password: string,
     confirmPassword: string,
-    role: string,
-    specialization?: string,
+    role?: string,
     phone?: string,
   ) => Promise<void>;
   logout: () => void;
@@ -104,8 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email: string,
     password: string,
     confirmPassword: string,
-    role: string,
-    specialization?: string,
+    role: string = "patient",
     phone?: string,
   ) => {
     const response = await api.post("/auth/signup", {
@@ -113,8 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email,
       password,
       confirmPassword,
-      role,
-      specialization,
+      role: role || "patient",
       phone,
     });
     if (response.data && response.data.status === "success") {

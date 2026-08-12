@@ -708,7 +708,7 @@ function LandingPageComponent() {
         <div className="max-w-4xl mx-auto px-6 space-y-4">
           <p className="font-bold text-slate-200">Salamat Medical Appointment & Consultation Portal</p>
 
-          <div className="inline-flex items-center justify-center gap-3 px-4.5 py-2.5 bg-slate-800/80 border border-slate-700/60 rounded-2xl shadow-sm">
+          <div className="inline-flex items-center justify-center gap-3 px-4.5 py-2.5 bg-slate-800/80 border border-slate-700/60 rounded-2xl shadow-sm mt-4">
             <img src="/dev-logo.png" alt="Developer Logo" className="w-8 h-8 rounded-xl object-cover shadow-sm border border-slate-700/50" />
             <div className="text-left">
               <div className="text-slate-200 font-bold text-xs">Developed by Amr Morcy</div>

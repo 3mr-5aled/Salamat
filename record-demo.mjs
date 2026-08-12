@@ -609,6 +609,20 @@ async function renderOutroScene(page) {
     });
     await sleep(2000);
 
+    // 2.1b — Patient Emergency & Support Section
+    console.log("  Scene 2.1b — Patient Support & Hotline");
+    await smoothScroll(page, 550);
+    await updateHUD(page, {
+      step: "PATIENT • EMERGENCY HOTLINE & SUPPORT",
+      title: "24/7 Emergency Hotline & Direct Hospital Channels",
+      description:
+        "Direct access to the 19999 toll-free Emergency Hotline, instant WhatsApp support (+20 123 456 7890), Facebook page, phone desk, and hospital location.",
+      tag: "Patient Support",
+    });
+    await sleep(2500);
+    await smoothScroll(page, -550);
+    await sleep(1000);
+
     // 2.2 — Notification Bell
     console.log("  Scene 2.2 — Notification Bell");
     try {

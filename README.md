@@ -46,9 +46,11 @@ Designed around a **3-tier role hierarchy** (`Patient`, `Doctor`, `Admin`), Sala
 
 <div align="center">
 
-![System Walkthrough Demo](docs/videos/demo.gif)
+[![Salamat Medical System Demo Walkthrough](https://img.youtube.com/vi/YH1BOnsHTJE/maxresdefault.jpg)](https://youtu.be/YH1BOnsHTJE)
 
-*Watch a full walkthrough of the Salamat Medical System including Patient booking, Doctor workstation, and Admin panel.*
+[![Watch on YouTube](https://img.shields.io/badge/Watch_Full_Demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/YH1BOnsHTJE)
+
+*Click the thumbnail or badge above to watch the full system walkthrough on YouTube.*
 
 </div>
 

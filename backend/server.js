@@ -223,3 +223,5 @@ app.all("*", (req, res, next) => {
 
 // Global Error Handler
 app.use(globalErrorHandler);
+
+module.exports = app;

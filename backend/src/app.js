@@ -18,21 +18,42 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 // Security Middlewares
 app.use(helmet());
 
-app.use(
-  cors({
-    origin: process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(",")
-      : [
-          "http://localhost:8000",
-          "http://localhost:5173",
-          "http://localhost:3000",
-          "http://localhost:3001",
-        ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-requested-with"],
-  })
-);
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim().replace(/\/$/, ""))
+  : [];
+
+const defaultAllowedOrigins = [
+  "http://localhost:8000",
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://salamat-medical-system.vercel.app",
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    const cleanOrigin = origin.trim().replace(/\/$/, "");
+
+    if (
+      allowedOrigins.includes(cleanOrigin) ||
+      defaultAllowedOrigins.includes(cleanOrigin) ||
+      cleanOrigin.endsWith(".vercel.app") ||
+      process.env.NODE_ENV !== "production"
+    ) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS policy blocked request from origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(cookieParser());
 app.use(express.json({ limit: "20kb" }));

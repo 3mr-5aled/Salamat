@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="frontend/src/assets/app-logo-transparent.png" alt="Salamat Hospital Logo" width="180" />
+
 # 🏥 Salamat Medical System
 
 **An Enterprise-Grade, Full-Stack Healthcare Appointment & Clinical Management Ecosystem**
@@ -19,6 +21,7 @@
 ## 📌 Table of Contents
 
 - [Overview](#-overview)
+- [System Demo Video](#-system-demo-video)
 - [System Architecture](#-system-architecture)
 - [Key Features by User Role](#-key-features-by-user-role)
 - [UI Screenshots](#-ui-screenshots)
@@ -36,6 +39,18 @@
 **Salamat** (سلامات) is a modern, full-stack medical appointment management platform engineered to connect patients with board-certified healthcare providers and hospital management.
 
 Designed around a **3-tier role hierarchy** (`Patient`, `Doctor`, `Admin`), Salamat provides real-time specialist discovery, dynamic conflict-free slot scheduling, clinical consultation management, and paperless digital prescription rendering.
+
+---
+
+## 🎥 System Demo Video
+
+<div align="center">
+
+<video src="docs/videos/demo.webm" controls width="100%"></video>
+
+*Watch a full walkthrough of the Salamat Medical System including Patient booking, Doctor workstation, and Admin panel.*
+
+</div>
 
 ---
 

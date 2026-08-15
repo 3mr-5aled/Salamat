@@ -40,7 +40,6 @@ record-demo.mjs
 .playwright-mcp/
 demo-recordings/
 docs/superpowers/
-docs/PRODUCTION_AUDIT_REPORT.md
 FRONTEND_PLAN.md
 FRONTEND_TASKS.md
 DESIGN.md

@@ -25,22 +25,24 @@ const app = require("./src/app");
 const PORT = process.env.PORT || 8000;
 const NODE_ENV = process.env.NODE_ENV || "development";
 
-// Start server
-const server = app.listen(PORT, () => {
-  logger.info(`🚀 Server running in ${NODE_ENV} mode on port ${PORT}`);
-});
+// Start server (Only when running as a standalone node process, not on Vercel serverless)
+if (!process.env.VERCEL) {
+  const server = app.listen(PORT, () => {
+    logger.info(`🚀 Server running in ${NODE_ENV} mode on port ${PORT}`);
+  });
 
-// Handle rejection outside express
-process.on("unhandledRejection", (err) => {
-  logger.error(`Unhandled Promise Rejection: ${err.name} | ${err.message}`, {
-    stack: err.stack,
-    event: "unhandledRejection",
+  // Handle rejection outside express
+  process.on("unhandledRejection", (err) => {
+    logger.error(`Unhandled Promise Rejection: ${err.name} | ${err.message}`, {
+      stack: err.stack,
+      event: "unhandledRejection",
+    });
+    server.close(() => {
+      logger.error("Server shutting down due to unhandled promise rejection");
+      process.exit(1);
+    });
   });
-  server.close(() => {
-    logger.error("Server shutting down due to unhandled promise rejection");
-    process.exit(1);
-  });
-});
+}
 
 // Security Middlewares
 // Set security HTTP headers

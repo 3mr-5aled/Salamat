@@ -8,8 +8,8 @@ const dbConnection = () => {
       "❌ Database Connection Error: Environment variable 'db_uri' is undefined.\n" +
         "Please make sure your environment configuration (e.g., config.env) is set up correctly with a valid MongoDB connection string.\n" +
         "Refer to QUICKSTART.md or README.md for setup instructions."
-    );
-    process.exit(1);
+    console.warn("⚠️ Warning: db_uri is not defined. Database queries will return 503 error.");
+    return;
   }
 
   const dbName = process.env.dbname || "Salamat";

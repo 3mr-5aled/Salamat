@@ -13,7 +13,6 @@ import {
   getAppointments,
 } from "../services/appointment";
 import { getTodayTipIndex } from "../lib/wellnessTips";
-import { getLocalDateString } from "../lib/formatters";
 import type { MappedPatientBooking } from "../types";
 
 export type PatientTab = "overview" | "check-symptoms" | "find-doctor" | "bookings" | "profile";
@@ -27,7 +26,7 @@ export function usePatientDashboard() {
   const [activeTab, setActiveTab] = useState<PatientTab>("overview");
   const [searchDoc, setSearchDoc] = useState("");
   const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
-  const [slotDateFilter, setSlotDateFilter] = useState(getLocalDateString());
+  const [slotDateFilter, setSlotDateFilter] = useState("");
   const [bookingMsg, setBookingMsg] = useState<string | null>(null);
   const [symptoms, setSymptoms] = useState("");
 
@@ -78,15 +77,15 @@ export function usePatientDashboard() {
   });
 
   // 3. Doctor Slots Query
-  const { data: docSlots = [] } = useQuery({
+  const { data: docSlots = [], isLoading: isLoadingSlots } = useQuery({
     queryKey: ["doctorSlots", selectedDoc?._id],
     queryFn: async () => {
       const slots = await getDoctorSlots(selectedDoc._id);
       return [...slots].sort((a: any, b: any) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
-        if (dateA !== dateB) return dateB - dateA;
-        return (b.time || "").localeCompare(a.time || "");
+        if (dateA !== dateB) return dateA - dateB; // ascending: nearest first
+        return (a.time || "").localeCompare(b.time || ""); // ascending: earliest time first
       });
     },
     enabled: !!selectedDoc?._id,
@@ -100,8 +99,9 @@ export function usePatientDashboard() {
       const list = await getAppointments({ "patient.patientId": patientId });
       const mapped: MappedPatientBooking[] = list.map((app: any) => {
         const reg = app.patient?.find((p: any) => {
-          const pId = p.patientId?._id || p.patientId;
-          return pId === patientId;
+          const rawId = p.patientId?._id || p.patientId;
+          const pIdStr = typeof rawId === "object" && rawId?._id ? String(rawId._id) : String(rawId);
+          return pIdStr === String(patientId);
         });
         return {
           appointmentId: app._id,
@@ -137,6 +137,8 @@ export function usePatientDashboard() {
       return mapped;
     },
     enabled: !!(isAuthenticated && user?.role === "patient" && patientId),
+    refetchInterval: activeTab === "bookings" ? 5000 : 15000,
+    staleTime: 0,
   });
 
   const loadDoctors = useCallback(async () => {
@@ -149,7 +151,7 @@ export function usePatientDashboard() {
 
   const handleSelectDoctor = (doc: any) => {
     setSelectedDoc(doc);
-    setSlotDateFilter(getLocalDateString());
+    setSlotDateFilter("");
   };
 
   // Mutations
@@ -173,7 +175,12 @@ export function usePatientDashboard() {
 
   const handleBook = async (slotId: string) => {
     if (!patientId) return;
-    await bookMutation.mutateAsync({ slotId, patientId, symptoms });
+    try {
+      await bookMutation.mutateAsync({ slotId, patientId, symptoms });
+    } catch {
+      // Error is handled by onError (sets bookingMsg). Swallow here so
+      // the modal's click handler can still call onClose() after this returns.
+    }
   };
 
   const cancelMutation = useMutation({
@@ -216,6 +223,7 @@ export function usePatientDashboard() {
     selectedDoc,
     setSelectedDoc,
     docSlots,
+    isLoadingSlots,
     slotDateFilter,
     setSlotDateFilter,
     bookingMsg,

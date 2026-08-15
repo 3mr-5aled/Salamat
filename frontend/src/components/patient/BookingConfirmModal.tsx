@@ -93,7 +93,12 @@ export const BookingConfirmModal: React.FC<BookingConfirmModalProps> = ({
             Cancel
           </Button>
           <Button
-            onClick={() => bookingSlot && handleBook(bookingSlot._id)}
+            onClick={async () => {
+              if (bookingSlot) {
+                await handleBook(bookingSlot._id);
+                onClose();
+              }
+            }}
             className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl px-5 py-2 text-xs font-bold shadow-[0_4px_12px_rgba(37,99,235,0.15)] transition-all cursor-pointer"
           >
             Confirm Appointment Booking

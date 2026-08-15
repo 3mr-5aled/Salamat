@@ -189,13 +189,14 @@ class AppointmentService {
         throw new ApiError("Patient not found", 404);
       }
 
-      // 3. Single Active Appointment Guardrail across entire system
-      const existingActiveAppointment = await Appointment.findOne({
+      // 3. Prevent double-booking the same session — one slot per patient per session
+      const existingInSession = await Appointment.findOne({
+        session: sessionId,
         patient: patientId,
-        status: { $in: ["Pending", "Scheduled"] },
+        status: { $ne: "Cancelled" },
       });
-      if (existingActiveAppointment) {
-        throw new ApiError("Patient already has an active or pending appointment", 400);
+      if (existingInSession) {
+        throw new ApiError("You already have a booking in this session", 400);
       }
 
       // 4. Generate all possible slots

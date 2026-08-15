@@ -157,7 +157,7 @@ export interface AppointmentSlot {
  * @returns A promise that resolves to an array of appointment slots.
  */
 export const getDoctorSlots = async (doctorId: string): Promise<AppointmentSlot[]> => {
-  const response = await api.get(`/appointments?doctor=${doctorId}&status=Scheduled`);
+  const response = await api.get(`/appointments?doctor=${doctorId}`);
   return response.data?.data || [];
 };
 

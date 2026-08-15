@@ -12,10 +12,12 @@ const dbConnection = () => {
     process.exit(1);
   }
 
+  const dbName = process.env.dbname || "Salamat";
+
   mongoose
-    .connect(dbUri)
+    .connect(dbUri, { dbName })
     .then((conn) => {
-      console.log(`Database Connected: ${conn.connection.host}`);
+      console.log(`Database Connected: ${conn.connection.host} [Database: ${conn.connection.name}]`);
     })
     .catch((err) => {
       console.error(`Database Error: ${err}`);

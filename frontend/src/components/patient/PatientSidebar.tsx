@@ -67,7 +67,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
               <div className="text-[10px] font-semibold text-[#16A34A] uppercase tracking-widest">Patient Portal</div>
             </div>
           </div>
-          <NotificationBell />
+          <NotificationBell align="left" />
         </div>
 
         {/* Nav Links */}

@@ -7,7 +7,11 @@ import {
 } from "../services/notification";
 import { useAuth } from "../contexts/AuthContext";
 
-export const NotificationBell: React.FC = () => {
+interface NotificationBellProps {
+  align?: "left" | "right";
+}
+
+export const NotificationBell: React.FC<NotificationBellProps> = ({ align = "left" }) => {
   const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState<number>(0);
@@ -98,7 +102,11 @@ export const NotificationBell: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="origin-top-right absolute right-0 mt-2 w-80 sm:w-96 rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 overflow-hidden">
+        <div
+          className={`absolute ${
+            align === "left" ? "left-0 origin-top-left" : "right-0 origin-top-right"
+          } mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 overflow-hidden`}
+        >
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
             <h3 className="text-sm font-semibold text-gray-800">Notifications</h3>
             {unreadCount > 0 && (
@@ -125,22 +133,57 @@ export const NotificationBell: React.FC = () => {
                     !item.isRead ? "bg-blue-50/50" : ""
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <p
-                      className={`text-sm ${
-                        !item.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-700"
-                      }`}
-                    >
-                      {item.title}
-                    </p>
-                    {!item.isRead && (
-                      <span className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-1.5 ml-2" />
-                    )}
+                  <div className="flex items-start gap-3">
+                    <div className="shrink-0 mt-1">
+                      <svg
+                        className={`w-5 h-5 ${
+                          !item.isRead ? "text-blue-600" : "text-gray-400"
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p
+                          className={`text-sm ${
+                            !item.isRead ? "font-semibold text-gray-900" : "font-medium text-gray-700"
+                          }`}
+                        >
+                          {item.title}
+                        </p>
+                        {!item.isRead && (
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleItemClick(item);
+                              }}
+                              title="Mark as read"
+                              className="p-1 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                              </svg>
+                            </button>
+                            <span className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.message}</p>
+                      <span className="text-[10px] text-gray-400 mt-2 block">
+                        {new Date(item.createdAt).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">{item.message}</p>
-                  <span className="text-[10px] text-gray-400 mt-2 block">
-                    {new Date(item.createdAt).toLocaleString()}
-                  </span>
                 </div>
               ))
             )}

@@ -190,7 +190,7 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
               Patient Visits & Registrations
             </h2>
             <p className="text-sm text-[#64748B]">
-              Manage patient registration requests, approve bookings, and conduct clinical consultations.
+              Review patient visits, clinical details, and conduct consultations.
             </p>
           </div>
 

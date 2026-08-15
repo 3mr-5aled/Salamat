@@ -1,13 +1,21 @@
-# fixes in recording
+# Get ready for production
 
-- [x] show contact section in home page after hotline
-- [x] remove that the admin receive messages from the patient as they only contact on the support hotline or whatsapp or facebook not in doctor messages
-- [x] must review the overview in recording not jump to quick booking
-- [x] wait for admin dashboard to load before doing it
+- review the app as a user and note if there is a critical part to modify
+- check for OWASP and security measures
+- check application structure if it meets professional conditions
 
-# new in recording
+# Before production
 
-## add Intro Page and Outro Page
+- Create a professional and detailed Github README with screenshots
+- using playwright mcp to get some screenshots
+- create Linkedin_post.md that has the post on linkedin (Arabic (egyptian dialect) then english version beneath)
+- create repo description
 
-- [x] in intro page mention (brief of the project , developer worked on it (@3mr-5aled) on github my name is Amr Morcy , technologies used )
-- [x] make the intro and outro pages look modern and attractive
+# Production
+
+give me setup needed
+
+# Rules
+
+- log the outcomes to review later
+- ask me for clarification

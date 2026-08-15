@@ -10,6 +10,8 @@ import {
   Link2Off,
   RotateCcw,
   XCircle,
+  Check,
+  CheckCheck,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
@@ -25,6 +27,7 @@ interface AdminTabsProps {
 
 export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
   const [openDoctorIntervals, setOpenDoctorIntervals] = React.useState<Record<string, boolean>>({});
+  const [messageFilter, setMessageFilter] = React.useState<"all" | "unread" | "read">("all");
   const {
     activeTab,
     clinics,
@@ -73,6 +76,9 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
     setAdminPastSlotsOpen,
     loadingMessages,
     messages,
+    unreadAdminMessagesCount,
+    handleMarkMessageAsRead,
+    handleMarkAllMessagesAsRead,
     slotsCancelDate,
     setSlotsCancelDate,
     handleAdminCancelDay,
@@ -995,45 +1001,126 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
       {/* MESSAGES TAB */}
       {activeTab === "messages" && (
         <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold text-[#0F172A] tracking-tight">Doctor Inbox & Requests</h2>
-            <p className="text-sm text-[#64748B]">Read and manage support and scheduling request messages from doctors.</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-[#0F172A] tracking-tight">Doctor Inbox & Requests</h2>
+              <p className="text-sm text-[#64748B]">Read and manage support and scheduling request messages from doctors.</p>
+            </div>
+            {unreadAdminMessagesCount > 0 && (
+              <Button
+                onClick={handleMarkAllMessagesAsRead}
+                variant="outline"
+                className="text-xs font-bold text-[#2563EB] border-[#2563EB]/20 hover:bg-[#2563EB]/5 rounded-xl cursor-pointer shrink-0 flex items-center gap-1.5"
+              >
+                <CheckCheck size={14} />
+                <span>Mark all as read ({unreadAdminMessagesCount})</span>
+              </Button>
+            )}
           </div>
 
           {loadingMessages ? (
             <div className="p-10 text-center text-xs text-slate-500 font-semibold">Loading messages...</div>
           ) : (() => {
             const docMessages = messages.filter((m: any) => m.senderRole === "doctor");
-            if (docMessages.length === 0) {
-              return (
-                <div className="text-center p-12 bg-white rounded-3xl border border-slate-100 shadow-sm w-full mt-6">
-                  <p className="text-sm font-semibold text-[#64748B]">No messages received from doctors.</p>
-                </div>
-              );
-            }
+            const unreadCount = docMessages.filter((m: any) => !m.isRead).length;
+            const readCount = docMessages.filter((m: any) => m.isRead).length;
+
+            const filteredDocMessages = docMessages.filter((m: any) => {
+              if (messageFilter === "unread") return !m.isRead;
+              if (messageFilter === "read") return m.isRead;
+              return true;
+            });
+
             return (
-              <div className="grid grid-cols-1 gap-4">
-                {docMessages.map((msg: any) => (
-                  <Card key={msg._id} className="rounded-2xl border-slate-100 shadow-sm p-6 bg-white space-y-3">
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-slate-50 pb-3">
-                      <div>
-                        <h3 className="font-bold text-[#0F172A] text-sm">{msg.senderName}</h3>
-                        <p className="text-[10px] text-[#64748B] font-semibold mt-0.5">{msg.senderEmail}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] bg-blue-50 text-[#2563EB] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                          {msg.senderRole}
-                        </span>
-                        <p className="text-[10px] text-slate-400 font-medium mt-1">
-                          {new Date(msg.createdAt).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{msg.message}</p>
-                    </div>
-                  </Card>
-                ))}
+              <div className="space-y-4">
+                {/* Filter Controls */}
+                <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm w-fit">
+                  <button
+                    onClick={() => setMessageFilter("all")}
+                    className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                      messageFilter === "all" ? "bg-slate-900 text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    All ({docMessages.length})
+                  </button>
+                  <button
+                    onClick={() => setMessageFilter("unread")}
+                    className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                      messageFilter === "unread" ? "bg-[#2563EB] text-white shadow-sm" : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Unread ({unreadCount})
+                  </button>
+                  <button
+                    onClick={() => setMessageFilter("read")}
+                    className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                      messageFilter === "read" ? "bg-slate-200 text-slate-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Read ({readCount})
+                  </button>
+                </div>
+
+                {filteredDocMessages.length === 0 ? (
+                  <div className="text-center p-12 bg-white rounded-3xl border border-slate-100 shadow-sm w-full mt-2">
+                    <p className="text-sm font-semibold text-[#64748B]">
+                      No {messageFilter !== "all" ? messageFilter : ""} messages received from doctors.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {filteredDocMessages.map((msg: any) => (
+                      <Card
+                        key={msg._id}
+                        className={`rounded-2xl border-slate-100 shadow-sm p-6 bg-white space-y-3 transition-all ${
+                          !msg.isRead ? "border-l-4 border-l-[#2563EB] bg-blue-50/20" : ""
+                        }`}
+                      >
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b border-slate-50 pb-3">
+                          <div className="flex items-center gap-3">
+                            {!msg.isRead ? (
+                              <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB] shrink-0" />
+                            ) : (
+                              <span className="w-2.5 h-2.5 rounded-full bg-slate-300 shrink-0" />
+                            )}
+                            <div>
+                              <h3 className="font-bold text-[#0F172A] text-sm">{msg.senderName}</h3>
+                              <p className="text-[10px] text-[#64748B] font-semibold mt-0.5">{msg.senderEmail}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                                  !msg.isRead ? "bg-blue-100 text-[#2563EB]" : "bg-slate-100 text-slate-500"
+                                }`}
+                              >
+                                {!msg.isRead ? "Unread" : "Read"}
+                              </span>
+                              <p className="text-[10px] text-slate-400 font-medium mt-1">
+                                {new Date(msg.createdAt).toLocaleString()}
+                              </p>
+                            </div>
+                            {!msg.isRead && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleMarkMessageAsRead(msg._id)}
+                                className="h-8 px-3 text-xs font-semibold text-[#2563EB] border-blue-200 hover:bg-blue-50 flex items-center gap-1.5 cursor-pointer rounded-xl"
+                              >
+                                <Check size={14} />
+                                <span>Mark as Read</span>
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{msg.message}</p>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })()}

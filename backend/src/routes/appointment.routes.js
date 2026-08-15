@@ -55,6 +55,22 @@ router.get(
 
 router.get("/", getAppointmentsByDateValidator, getAllAppointments);
 
+// Protected literal-path GET routes must come BEFORE /:id to avoid being captured
+// These are registered early but the handler itself enforces auth via protect middleware
+router.get(
+  "/pending",
+  protect,
+  allowedTo("admin", "doctor"),
+  getPendingRegistrations
+);
+
+router.get(
+  "/pending-registrations",
+  protect,
+  allowedTo("admin", "doctor"),
+  getPendingRegistrations
+);
+
 router.get("/:id", getAppointmentByIdValidator, getAppointmentById);
 
 // Public / Patient book route
@@ -142,19 +158,6 @@ router.post(
   allowedTo("admin"),
   getAppointmentByIdValidator,
   adminBookController
-);
-
-// Admin & Doctor approval list and action endpoints
-router.get(
-  "/pending",
-  allowedTo("admin", "doctor"),
-  getPendingRegistrations
-);
-
-router.get(
-  "/pending-registrations",
-  allowedTo("admin", "doctor"),
-  getPendingRegistrations
 );
 
 router.patch(

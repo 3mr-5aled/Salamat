@@ -29,11 +29,10 @@ const seedDatabase = async () => {
       throw new Error("db_uri environment variable is not defined in config.env");
     }
 
-    await mongoose.connect(dbUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    logger.info("Connected to database for seeding.");
+    const dbName = process.env.dbname || "Salamat";
+    mongoose.set("strictQuery", false);
+    await mongoose.connect(dbUri, { dbName });
+    logger.info(`Connected to database '${dbName}' for seeding.`);
 
     // Seed Clinics
     const clinicCount = await Clinic.countDocuments();

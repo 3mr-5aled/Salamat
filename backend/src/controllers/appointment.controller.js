@@ -5,6 +5,8 @@ const factory = require("./handlers.factory");
 const { ApiError } = require("../utils");
 const { generateSessionSlots } = require("../utils/helpers/sessionHelper");
 const Patient = require("../models/patient.model");
+const User = require("../models/user.model");
+const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 
 // @desc    Create a clinic session (formerly creating a slot)
@@ -130,6 +132,16 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
       };
     };
 
+    if (!req.user && req.headers && req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+      try {
+        const token = req.headers.authorization.split(" ")[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        req.user = await User.findById(decoded.userId);
+      } catch (err) {
+        // Optional token parsing fallback
+      }
+    }
+
     let patientProfileId = null;
     if (req.user && req.user.role === "patient") {
       const patientDoc = await Patient.findOne({ user: req.user._id });
@@ -139,10 +151,14 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
     let isPatientQuery = false;
     let resolvedPatientId = null;
 
+    // Only treat this as a patient-bookings query if an explicit patient filter was
+    // passed in the query string. A logged-in patient browsing a doctor's available
+    // slots should NOT be redirected to their own bookings list.
     if (req.query.patient || req.query["patient.patientId"]) {
       isPatientQuery = true;
       resolvedPatientId = req.query.patient || req.query["patient.patientId"];
-    } else if (patientProfileId) {
+    } else if (patientProfileId && !req.query.doctor && !req.query.clinic && !req.query.session) {
+      // Fallback: if no specific schedule filter is present, show own bookings
       isPatientQuery = true;
       resolvedPatientId = patientProfileId;
     }
@@ -159,6 +175,13 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
       }
 
       const appointments = await Appointment.find({ patient: resolvedPatientId })
+        .populate({
+          path: "session",
+          populate: [
+            { path: "doctor", populate: "clinic" },
+            { path: "clinic" },
+          ],
+        })
         .sort({ appointmentTime: 1 });
 
       const formatted = appointments.map(formatAppointment);
@@ -173,7 +196,7 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
     // Case 2: Fetching doctor/clinic schedules (Booked & Available slots merged)
     const { doctor, clinic, session: sessionId, date } = req.query;
 
-    const sessionQuery = {};
+    const sessionQuery = { status: { $ne: "Cancelled" } };
     if (doctor) sessionQuery.doctor = doctor;
     if (clinic) sessionQuery.clinic = clinic;
     if (sessionId) sessionQuery._id = sessionId;
@@ -188,14 +211,26 @@ exports.getAppointmentsOrScheduleController = async (req, res, next) => {
     const sessions = await ClinicSession.find(sessionQuery).populate("doctor").populate("clinic");
     let allScheduleSlots = [];
 
+    const sessionIds = sessions.map((s) => s._id);
+    const allBookedAppointments = sessionIds.length > 0
+      ? await Appointment.find({
+          session: { $in: sessionIds },
+          status: { $ne: "Cancelled" },
+        }).populate("patient")
+      : [];
+
+    const appointmentsBySessionMap = new Map();
+    for (const app of allBookedAppointments) {
+      const sessionIdStr = String(app.session?._id || app.session);
+      if (!appointmentsBySessionMap.has(sessionIdStr)) {
+        appointmentsBySessionMap.set(sessionIdStr, new Map());
+      }
+      appointmentsBySessionMap.get(sessionIdStr).set(app.slotIndex, app);
+    }
+
     for (const session of sessions) {
       const slots = generateSessionSlots(session);
-      const bookedAppointments = await Appointment.find({
-        session: session._id,
-        status: { $ne: "Cancelled" },
-      }).populate("patient");
-
-      const bookingsMap = new Map(bookedAppointments.map((app) => [app.slotIndex, app]));
+      const bookingsMap = appointmentsBySessionMap.get(String(session._id)) || new Map();
 
       const mergedSlots = slots.map((slot) => {
         const booking = bookingsMap.get(slot.slotIndex);

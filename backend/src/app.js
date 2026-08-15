@@ -79,6 +79,20 @@ app.get("/health", (req, res) => {
   });
 });
 
+const mongoose = require("mongoose");
+
+// Database Service Availability Check Middleware
+app.use("/api", (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      status: "error",
+      message: "Database service is currently offline or unreachable. Please verify MongoDB service is running and try again.",
+      errorCode: "DATABASE_OFFLINE",
+    });
+  }
+  next();
+});
+
 // Mount Routes
 mountRoutes(app);
 

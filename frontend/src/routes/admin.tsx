@@ -45,7 +45,7 @@ function AdminDashboardComponent() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <NotificationBell />
+              <NotificationBell align="right" />
             </div>
           </div>
 
@@ -79,7 +79,16 @@ function AdminDashboardComponent() {
                     : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
                 }`}
               >
-                {tab === "messages" ? "Doctor Messages" : tab === "approvals" ? (
+                {tab === "messages" ? (
+                  <>
+                    <span>Doctor Messages</span>
+                    {admin.unreadAdminMessagesCount > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-blue-600 text-white font-extrabold">
+                        {admin.unreadAdminMessagesCount}
+                      </span>
+                    )}
+                  </>
+                ) : tab === "approvals" ? (
                   <>
                     <span>Pending Approvals</span>
                     {admin.pendingAppointments?.length > 0 && (

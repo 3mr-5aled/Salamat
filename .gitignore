@@ -29,21 +29,24 @@ yarn-error.log*
 .mongo/
 dump/
 
-# AI-related files, plans, and implementations (Gitignored per user request)
+# AI Agent internal files, scratch, skills, specs, and temporary AI docs
+.scratch/
+.agents/
+skills-lock.json
+AGENTS.md
+todo.md
+DEMO_WALKTHROUGH.md
+record-demo.mjs
+.playwright-mcp/
+demo-recordings/
+docs/superpowers/
+docs/PRODUCTION_AUDIT_REPORT.md
+FRONTEND_PLAN.md
+FRONTEND_TASKS.md
+DESIGN.md
 *ai_implementation_plan*
 *ai_plan*
 *ai-plan*
-*ai.service*
-*ai.controller*
-*ai.routes*
-*ai.js*
-*ai.ts*
-*ai.tsx*
-ai/
-**/ai/
-**/*ai.service*
-**/*ai.controller*
-**/*ai.routes*
-**/*ai.js*
-**/*ai.ts*
-**/*ai.tsx*
+*_plan.md
+*_walkthrough.md
+*.spec.md

@@ -1,0 +1,65 @@
+🚀 سعيد جداً بإطلاق مشروع Salamat (سلامات) — نظام إدارة الحجوزات والعيادات الطبية المتكامل! 🏥⚡
+
+من أهم النقاط وأنا ببني الـ System ده: إزاي نوفر تجربة مستخدم سلسة وفي نفس الوقت نحافظ على أمان البيانات بأعلى معايير الـ Security (OWASP Top 10)! 🔒💪
+
+سلامات بيخدم 3 أطراف رئيسية:
+
+👨‍👩‍👧‍👦 1. بوابة المريض (Patient Portal):
+• بحث ذكي وتصفح حسب التخصصات والأطباء.
+• حجز مواعيد ديناميكي يمنع تعارض الفترات.
+• عرض الروشتة الطبية الإلكترونية وتنزيلها.
+
+📋 2. محطة عمل الطبيب (Doctor Workstation):
+• متابعة الكشوفات اليومية وفتح كارت المريض.
+• تسجيل التشخيص والروشتة الرقمية مباشرة.
+• إدارة ساعات العمل وتعديل الشفتات الطارئة.
+
+🛡️ 3. لوحة تحكم الإدارة (Admin Control Panel):
+• متابعة مؤشرات العيادات والمرضى والمواعيد.
+• توزيع الأطباء على العيادات وحجز الـ Walk-in.
+• استجابة فورية لرسائل الطاقم الطبي.
+
+💻 الـ Tech Stack:
+• Frontend: React, TypeScript, Vite, TanStack Router.
+• Backend: Node.js, Express.js, MongoDB (Mongoose).
+• Security: Helmet headers, CORS, Rate Limiting, HPP, bcrypt.
+• Quality: 100% Strict TypeScript (0 errors).
+
+🔗 رابط المشروع على GitHub:
+https://github.com/3mr-5aled/Salamat-Medical-System
+
+يسعدني جداً سماع آرائكم واقتراحاتكم! 💙
+
+==================================================
+
+🚀 Excited to announce Salamat — A Full-Stack Medical Appointment & Clinical System! 🏥⚡
+
+Built with a focus on seamless user experience and strict OWASP security standards.
+
+Key Platform Modules:
+
+👨‍👩‍👧‍👦 1. Patient Portal:
+• Instant specialist discovery & department filtering.
+• Conflict-free dynamic slot scheduling engine.
+• Paperless digital prescription viewing & printing.
+
+📋 2. Doctor Workstation:
+• Live consultation drawer for diagnoses & prescriptions.
+• Shift management & emergency slot cancellation.
+• Direct messaging channel to hospital admin.
+
+🛡️ 3. Admin Control Panel:
+• Real-time analytics for clinics, doctors, & visits.
+• Facility allocations & walk-in registrations.
+• Staff inbox for doctor inquiries.
+
+💻 Tech Stack:
+• Frontend: React, TypeScript, Vite, TanStack Router.
+• Backend: Node.js, Express, MongoDB.
+• Security: Helmet headers, CORS, Rate limiting, HPP, bcrypt.
+• Quality: Zero TypeScript compilation errors.
+
+🔗 GitHub Repository:
+https://github.com/3mr-5aled/Salamat-Medical-System
+
+Feedback and reviews are warmly welcomed! 💙

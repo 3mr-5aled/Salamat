@@ -83,6 +83,21 @@ const globalError = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
 
+  const isMongoConnError =
+    err.name === "MongooseServerSelectionError" ||
+    err.name === "MongoNetworkError" ||
+    err.name === "MongoTimeoutError" ||
+    err.name === "MongoServerSelectionError" ||
+    err.code === "ECONNREFUSED";
+
+  if (isMongoConnError) {
+    return res.status(503).json({
+      status: "error",
+      message: "Database service is currently offline or unreachable. Please verify MongoDB service is running and try again.",
+      errorCode: "DATABASE_OFFLINE",
+    });
+  }
+
   if (process.env.NODE_ENV === "development") {
     sendErrorForDev(err, res);
   } else {

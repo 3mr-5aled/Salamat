@@ -36,6 +36,7 @@ import {
 } from "../services/appointment";
 import api from "../services/api";
 import { getLocalDateString } from "../lib/formatters";
+import { markAdminMessageAsRead, markAllAdminMessagesAsRead } from "../services/adminMessage";
 
 export function useAdminDashboard() {
   const queryClient = useQueryClient();
@@ -174,6 +175,10 @@ export function useAdminDashboard() {
     },
     enabled: !!(user?.role === "admin"),
   });
+
+  const unreadAdminMessagesCount = useMemo(() => {
+    return messages.filter((m: any) => !m.isRead).length;
+  }, [messages]);
 
   const { data: filteredSlots = [], isLoading: loadingSlots } = useQuery<any[]>({
     queryKey: ["adminFilteredSlots", slotsFilterDoctorId, slotsDateFilter],
@@ -1001,6 +1006,23 @@ export function useAdminDashboard() {
         queryClient.invalidateQueries({ queryKey: ["adminAppointments"] });
       } catch (err: any) {
         setActionError(getFriendlyErrorMessage(err));
+      }
+    },
+    unreadAdminMessagesCount,
+    handleMarkMessageAsRead: async (id: string) => {
+      try {
+        await markAdminMessageAsRead(id);
+        queryClient.invalidateQueries({ queryKey: ["adminMessages"] });
+      } catch (err: any) {
+        console.error("Failed to mark message as read:", err);
+      }
+    },
+    handleMarkAllMessagesAsRead: async () => {
+      try {
+        await markAllAdminMessagesAsRead();
+        queryClient.invalidateQueries({ queryKey: ["adminMessages"] });
+      } catch (err: any) {
+        console.error("Failed to mark all messages as read:", err);
       }
     },
   };

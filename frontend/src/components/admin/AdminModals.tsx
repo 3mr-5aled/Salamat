@@ -104,7 +104,6 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
     setDocAvailability,
     handleCreateDoctor,
 
-
     // Add Patient modal
     patientModalOpen,
     setPatientModalOpen,
@@ -146,7 +145,12 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
   return (
     <>
       {/* CLINIC CREATE / EDIT MODAL */}
-      <Dialog open={clinicModalOpen} onOpenChange={(open) => { if (!open) setClinicModalOpen(false); }}>
+      <Dialog
+        open={clinicModalOpen}
+        onOpenChange={(open) => {
+          if (!open) setClinicModalOpen(false);
+        }}
+      >
         <DialogContent className="max-w-md sm:rounded-3xl p-0 overflow-hidden">
           <DialogHeader className="p-6 bg-slate-50/50 border-b border-slate-100 text-left sm:text-left">
             <div className="flex items-center justify-between pr-6">
@@ -277,7 +281,12 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
       </Dialog>
 
       {/* ASSIGN DOCTOR MODAL */}
-      <Dialog open={Boolean(assignModalClinic)} onOpenChange={(open) => { if (!open) setAssignModalClinic(null); }}>
+      <Dialog
+        open={Boolean(assignModalClinic)}
+        onOpenChange={(open) => {
+          if (!open) setAssignModalClinic(null);
+        }}
+      >
         <DialogContent className="max-w-md sm:rounded-3xl p-0 overflow-hidden">
           <DialogHeader className="p-6 bg-slate-50/50 border-b border-slate-100 text-left sm:text-left">
             <div className="flex items-center justify-between pr-6">
@@ -298,16 +307,17 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
             </div>
           </DialogHeader>
           <div className="p-6 space-y-3 max-h-96 overflow-y-auto">
-            {assignModalClinic && doctors.filter(
+            {assignModalClinic &&
+            doctors.filter(
               (doc) =>
                 doc.specialization === assignModalClinic.specialty &&
-                doc.clinic?._id !== assignModalClinic._id
+                doc.clinic?._id !== assignModalClinic._id,
             ).length > 0 ? (
               doctors
                 .filter(
                   (doc) =>
                     doc.specialization === assignModalClinic.specialty &&
-                    doc.clinic?._id !== assignModalClinic._id
+                    doc.clinic?._id !== assignModalClinic._id,
                 )
                 .map((doc) => (
                   <div
@@ -342,7 +352,12 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
       </Dialog>
 
       {/* BOOK APPOINTMENT MODAL */}
-      <Dialog open={Boolean(bookingModalPatient)} onOpenChange={(open) => { if (!open) setBookingModalPatient(null); }}>
+      <Dialog
+        open={Boolean(bookingModalPatient)}
+        onOpenChange={(open) => {
+          if (!open) setBookingModalPatient(null);
+        }}
+      >
         <DialogContent className="max-w-md sm:rounded-3xl p-0 overflow-hidden">
           {bookingModalPatient && bookingModalPatient._id === "" ? (
             // Step 1: Patient Selection / Creation
@@ -353,7 +368,8 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                     Quick Booking — Select Patient
                   </DialogTitle>
                   <DialogDescription className="text-xs text-slate-500 font-semibold mt-0.5">
-                    Choose an existing patient or create a temporary patient record.
+                    Choose an existing patient or create a temporary patient
+                    record.
                   </DialogDescription>
                 </div>
               </DialogHeader>
@@ -407,7 +423,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                           p.fullName
                             .toLowerCase()
                             .includes(qbSearchQuery.toLowerCase()) ||
-                          (p.phone && p.phone.includes(qbSearchQuery))
+                          (p.phone && p.phone.includes(qbSearchQuery)),
                       )
                       .slice(0, 5)
                       .map((p) => (
@@ -420,8 +436,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                               {p.fullName}
                             </div>
                             <div className="text-[10px] text-slate-400 font-semibold">
-                              {p.phone || "No phone"} ·{" "}
-                              {p.medicalRecordNumber}
+                              {p.phone || "No phone"} · {p.medicalRecordNumber}
                             </div>
                           </div>
                           <Button
@@ -443,7 +458,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                         p.fullName
                           .toLowerCase()
                           .includes(qbSearchQuery.toLowerCase()) ||
-                        (p.phone && p.phone.includes(qbSearchQuery))
+                        (p.phone && p.phone.includes(qbSearchQuery)),
                     ).length === 0 && (
                       <div className="text-center py-6 text-xs text-slate-400 italic">
                         No matching patients found.
@@ -568,7 +583,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
 
                   {(() => {
                     const selectedClinic = clinics.find(
-                      (c) => c._id === bookingClinicId
+                      (c) => c._id === bookingClinicId,
                     );
                     const clinicHasNoDoctors =
                       selectedClinic &&
@@ -576,9 +591,15 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                         selectedClinic.doctors.length === 0);
                     if (bookingClinicId && clinicHasNoDoctors) {
                       return (
-                        <Badge variant="destructive" className="w-full justify-start p-3 text-xs rounded-xl font-medium flex items-center gap-2">
+                        <Badge
+                          variant="destructive"
+                          className="w-full justify-start p-3 text-xs rounded-xl font-medium flex items-center gap-2"
+                        >
                           <AlertCircle size={14} className="shrink-0" />
-                          <span>No doctors assigned for this clinic. Please assign a doctor first.</span>
+                          <span>
+                            No doctors assigned for this clinic. Please assign a
+                            doctor first.
+                          </span>
                         </Badge>
                       );
                     }
@@ -594,8 +615,8 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                       required
                       disabled={
                         !bookingClinicId ||
-                        clinics.find((c) => c._id === bookingClinicId)
-                          ?.doctors?.length === 0
+                        clinics.find((c) => c._id === bookingClinicId)?.doctors
+                          ?.length === 0
                       }
                       className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs focus:outline-none disabled:opacity-50"
                       value={bookingDoctorId}
@@ -610,7 +631,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                         .filter(
                           (d) =>
                             d.clinic?._id === bookingClinicId ||
-                            d.clinic === bookingClinicId
+                            d.clinic === bookingClinicId,
                         )
                         .map((d) => (
                           <option key={d._id} value={d._id}>
@@ -621,7 +642,10 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="b-date-filter" className="text-xs font-bold">
+                    <Label
+                      htmlFor="b-date-filter"
+                      className="text-xs font-bold"
+                    >
                       Filter Date of Appointment (Optional)
                     </Label>
                     <Input
@@ -643,11 +667,15 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                       Choose Preferred Vacant Slot
                     </Label>
                     {(() => {
-                      const filteredVacantSlots = availableSlots.filter((s: any) => {
-                        if (!bookingDateFilter) return true;
-                        const dStr = new Date(s.date).toISOString().split("T")[0];
-                        return dStr === bookingDateFilter;
-                      });
+                      const filteredVacantSlots = availableSlots.filter(
+                        (s: any) => {
+                          if (!bookingDateFilter) return true;
+                          const dStr = new Date(s.date)
+                            .toISOString()
+                            .split("T")[0];
+                          return dStr === bookingDateFilter;
+                        },
+                      );
 
                       return (
                         <select
@@ -669,7 +697,10 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                           </option>
                           {filteredVacantSlots.map((s) => (
                             <option key={s._id} value={s._id}>
-                              {s.date ? new Date(s.date).toLocaleDateString() : ""} @ {s.time} ({s.duration} mins)
+                              {s.date
+                                ? new Date(s.date).toLocaleDateString()
+                                : ""}{" "}
+                              @ {s.time} ({s.duration} mins)
                             </option>
                           ))}
                         </select>
@@ -705,14 +736,21 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
       </Dialog>
 
       {/* EMERGENCY CONTACT MODAL */}
-      <Dialog open={Boolean(activeContactPatient)} onOpenChange={(open) => { if (!open) setActiveContactPatient(null); }}>
+      <Dialog
+        open={Boolean(activeContactPatient)}
+        onOpenChange={(open) => {
+          if (!open) setActiveContactPatient(null);
+        }}
+      >
         <DialogContent className="max-w-sm sm:rounded-3xl p-6">
           <DialogHeader className="text-left sm:text-left mb-2">
             <div className="flex items-center justify-between pr-4">
               <DialogTitle className="font-bold text-slate-800 text-sm">
                 Emergency Contact Details
               </DialogTitle>
-              <Badge variant="warning" className="text-[10px]">Emergency</Badge>
+              <Badge variant="warning" className="text-[10px]">
+                Emergency
+              </Badge>
             </div>
           </DialogHeader>
           {activeContactPatient && (
@@ -741,7 +779,12 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
       </Dialog>
 
       {/* ADD DOCTOR MODAL */}
-      <Dialog open={doctorModalOpen} onOpenChange={(open) => { if (!open) setDoctorModalOpen(false); }}>
+      <Dialog
+        open={doctorModalOpen}
+        onOpenChange={(open) => {
+          if (!open) setDoctorModalOpen(false);
+        }}
+      >
         <DialogContent className="max-w-md sm:rounded-3xl p-0 overflow-hidden">
           <DialogHeader className="p-6 bg-slate-50/50 border-b border-slate-100 text-left sm:text-left">
             <div className="flex items-center justify-between pr-6">
@@ -894,13 +937,19 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
               </div>
               <div className="space-y-2 border-t border-slate-100 pt-4">
                 <div className="flex items-center justify-between">
-                  <Label className="text-xs font-bold">Practice Hours (Availability)</Label>
+                  <Label className="text-xs font-bold">
+                    Practice Hours (Availability)
+                  </Label>
                   <button
                     type="button"
                     onClick={() =>
                       setDocAvailability([
                         ...docAvailability,
-                        { dayOfWeek: "Monday", startTime: "09:00", endTime: "17:00" },
+                        {
+                          dayOfWeek: "Monday",
+                          startTime: "09:00",
+                          endTime: "17:00",
+                        },
                       ])
                     }
                     className="text-[#2563EB] hover:text-[#1D4ED8] text-[11px] font-bold flex items-center gap-1 cursor-pointer"
@@ -911,22 +960,38 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                 </div>
 
                 {docAvailability.length === 0 && (
-                  <p className="text-[11px] text-slate-400 italic">No practice hours set yet.</p>
+                  <p className="text-[11px] text-slate-400 italic">
+                    No practice hours set yet.
+                  </p>
                 )}
 
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {docAvailability.map((av: any, idx: number) => (
-                    <div key={idx} className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-100"
+                    >
                       <select
                         value={av.dayOfWeek}
                         onChange={(e) => {
                           const next = [...docAvailability];
-                          next[idx] = { ...next[idx], dayOfWeek: e.target.value };
+                          next[idx] = {
+                            ...next[idx],
+                            dayOfWeek: e.target.value,
+                          };
                           setDocAvailability(next);
                         }}
                         className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs focus:outline-none flex-1"
                       >
-                        {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((d) => (
+                        {[
+                          "Monday",
+                          "Tuesday",
+                          "Wednesday",
+                          "Thursday",
+                          "Friday",
+                          "Saturday",
+                          "Sunday",
+                        ].map((d) => (
                           <option key={d} value={d}>
                             {d}
                           </option>
@@ -937,7 +1002,10 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                         value={av.startTime}
                         onChange={(e) => {
                           const next = [...docAvailability];
-                          next[idx] = { ...next[idx], startTime: e.target.value };
+                          next[idx] = {
+                            ...next[idx],
+                            startTime: e.target.value,
+                          };
                           setDocAvailability(next);
                         }}
                         className="rounded-lg border border-slate-200 px-2 py-1 text-xs focus:outline-none w-20 bg-white"
@@ -955,7 +1023,11 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                       />
                       <button
                         type="button"
-                        onClick={() => setDocAvailability(docAvailability.filter((_, i) => i !== idx))}
+                        onClick={() =>
+                          setDocAvailability(
+                            docAvailability.filter((_, i) => i !== idx),
+                          )
+                        }
                         className="text-red-500 hover:text-red-700 cursor-pointer"
                       >
                         <Trash2 size={14} />
@@ -986,7 +1058,12 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
       </Dialog>
 
       {/* ADD PATIENT MODAL */}
-      <Dialog open={patientModalOpen} onOpenChange={(open) => { if (!open) setPatientModalOpen(false); }}>
+      <Dialog
+        open={patientModalOpen}
+        onOpenChange={(open) => {
+          if (!open) setPatientModalOpen(false);
+        }}
+      >
         <DialogContent className="max-w-md sm:rounded-3xl p-0 overflow-hidden">
           <DialogHeader className="p-6 bg-slate-50/50 border-b border-slate-100 text-left sm:text-left">
             <div className="flex items-center justify-between pr-6">
@@ -1205,14 +1282,20 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                       onChange={(e) => setAdminSlotRepeat(e.target.checked)}
                       className="rounded border-slate-300 text-[#2563EB] focus:ring-[#2563EB]"
                     />
-                    <Label htmlFor="a-slot-repeat" className="text-xs font-bold cursor-pointer">
+                    <Label
+                      htmlFor="a-slot-repeat"
+                      className="text-xs font-bold cursor-pointer"
+                    >
                       Repeat Session Weekly
                     </Label>
                   </div>
 
                   {adminSlotRepeat && (
                     <div className="space-y-1.5 animate-fade-in">
-                      <Label htmlFor="a-slot-repeat-until" className="text-xs font-bold">
+                      <Label
+                        htmlFor="a-slot-repeat-until"
+                        className="text-xs font-bold"
+                      >
                         Repeat Weekly Until Date
                       </Label>
                       <Input
@@ -1221,7 +1304,9 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                         min={adminSlotDate || getLocalDateString()}
                         required
                         value={adminSlotRepeatUntil}
-                        onChange={(e) => setAdminSlotRepeatUntil(e.target.value)}
+                        onChange={(e) =>
+                          setAdminSlotRepeatUntil(e.target.value)
+                        }
                         className="rounded-xl border-slate-200 text-xs"
                       />
                     </div>
@@ -1252,9 +1337,7 @@ export const AdminModals: React.FC<AdminModalsProps> = ({ admin }) => {
                     </span>
                     <Badge variant={capacity > 0 ? "success" : "destructive"}>
                       {capacity > 0
-                        ? `${capacity} Patient Slot${
-                            capacity > 1 ? "s" : ""
-                          }`
+                        ? `${capacity} Patient Slot${capacity > 1 ? "s" : ""}`
                         : "0 Slots (Invalid Range)"}
                     </Badge>
                   </div>

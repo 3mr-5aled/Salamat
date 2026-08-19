@@ -12,6 +12,7 @@ export function GlobalErrorFallback({
   reset,
 }: GlobalErrorFallbackProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const isDev = Boolean(import.meta.env.DEV);
 
   const errorMessage: string =
     error instanceof Error
@@ -66,16 +67,18 @@ export function GlobalErrorFallback({
           </Button>
         </div>
 
-        {/* Technical Details Toggle */}
-        {Boolean(error) && (
+        {/* Technical Details Toggle (Dev environment only) */}
+        {Boolean(error) && isDev && (
           <div className="pt-4 border-t border-slate-200/80">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setShowDetails(!showDetails)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
             >
               <span>{showDetails ? "Hide Technical Details" : "Show Technical Details"}</span>
               {showDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
+            </Button>
 
             {showDetails && (
               <div className="mt-3 p-4 rounded-xl bg-slate-900 text-slate-200 text-left text-xs font-mono overflow-x-auto max-h-48 border border-slate-800 space-y-2">

@@ -1,24 +1,23 @@
 import { createRoute, Link } from "@tanstack/react-router";
 import { rootRoute } from "./__root";
 import { useAuth } from "../contexts/AuthContext";
+import { getDashboardPath } from "../lib/role-utils";
 import { Home, ArrowLeft, SearchX } from "lucide-react";
+import { Button } from "../components/ui/button";
 
 export function NotFoundComponent() {
   const { user, isAuthenticated } = useAuth();
 
-  const dashboardPath =
-    isAuthenticated && user?.role === "admin"
-      ? "/app/admin"
-      : isAuthenticated
-        ? "/app"
-        : "/";
+  const dashboardPath = getDashboardPath(user, isAuthenticated);
 
   const buttonLabel =
     !isAuthenticated
       ? "Go to Home"
       : user?.role === "admin"
         ? "Go to Admin Panel"
-        : "Go to Dashboard";
+        : user?.role === "doctor"
+          ? "Go to Doctor Portal"
+          : "Go to Patient Dashboard";
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-slate-50/50">
@@ -53,13 +52,14 @@ export function NotFoundComponent() {
             <Home size={16} />
             <span>{buttonLabel}</span>
           </Link>
-          <button
+          <Button
             onClick={() => window.history.back()}
-            className="flex items-center gap-2 text-sm font-bold text-[#64748B] hover:text-[#0F172A] border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 px-6 py-3 rounded-xl transition-all duration-200 cursor-pointer"
+            variant="outline"
+            className="flex items-center gap-2 text-sm font-bold text-[#64748B] hover:text-[#0F172A] border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 px-6 py-3 rounded-xl transition-all duration-200"
           >
             <ArrowLeft size={16} />
             <span>Go Back</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

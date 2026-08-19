@@ -1,9 +1,11 @@
 import { ShieldAlert, ArrowLeft, LogOut } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { getDashboardPath, type UserRole } from "../../lib/role-utils";
+import { Button } from "../ui/button";
 
 export interface ForbiddenFallbackProps {
-  requiredRole?: string;
+  requiredRole?: UserRole;
   customMessage?: string;
 }
 
@@ -13,12 +15,7 @@ export function ForbiddenFallback({
 }: ForbiddenFallbackProps) {
   const { user, isAuthenticated, logout } = useAuth();
 
-  const userDashboardPath =
-    isAuthenticated && user?.role === "admin"
-      ? "/app/admin"
-      : isAuthenticated
-        ? "/app"
-        : "/";
+  const userDashboardPath = getDashboardPath(user, isAuthenticated);
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-slate-50/50">
@@ -55,13 +52,14 @@ export function ForbiddenFallback({
             <ArrowLeft size={16} />
             <span>Return to My Dashboard</span>
           </Link>
-          <button
+          <Button
             onClick={logout}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm font-bold text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 bg-white hover:bg-red-50/50 px-6 py-3 rounded-xl transition-all duration-200 cursor-pointer"
+            variant="outline"
+            className="w-full sm:w-auto border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50/50 text-sm font-bold px-6 py-3 rounded-xl transition-all"
           >
             <LogOut size={16} />
             <span>Sign Out</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

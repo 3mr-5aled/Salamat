@@ -39,14 +39,14 @@ describe("NotFoundComponent", () => {
     expect(dashboardLink).toHaveAttribute("href", "/");
   });
 
-  it("links to /app for logged-in patient or doctor", () => {
+  it("links to /app with Doctor Portal label for logged-in doctor", () => {
     mockAuthContext.isAuthenticated = true;
-    mockAuthContext.user = { role: "patient" };
+    mockAuthContext.user = { role: "doctor" };
 
     const Component = Route.options.component!;
     render(<Component />);
 
-    const dashboardLink = screen.getByRole("link", { name: /Go to Dashboard/i });
+    const dashboardLink = screen.getByRole("link", { name: /Go to Doctor Portal/i });
     expect(dashboardLink).toHaveAttribute("href", "/app");
   });
 

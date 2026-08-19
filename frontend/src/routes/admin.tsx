@@ -10,6 +10,10 @@ import { useModal } from "../contexts/ModalContext";
 
 import { NotificationBell } from "../components/NotificationBell";
 
+import { ForbiddenFallback } from "../components/shared/ForbiddenFallback";
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: "/app/admin",
@@ -18,11 +22,24 @@ export const Route = createRoute({
 
 function AdminDashboardComponent() {
   const admin = useAdminDashboard();
-  const { user, logout, authLoading } = useAuth() as any;
+  const { user, isAuthenticated, loading, authLoading, logout } = useAuth() as any;
   const { prompt: customPrompt, confirm: customConfirm } = useModal();
+  const navigate = useNavigate();
 
-  if (admin.loading || authLoading) {
+  const isAuthLoading = admin.loading || authLoading || loading;
+
+  useEffect(() => {
+    if (!isAuthLoading && !isAuthenticated) {
+      navigate({ to: "/app/login" });
+    }
+  }, [isAuthLoading, isAuthenticated, navigate]);
+
+  if (isAuthLoading) {
     return <LoadingSpinner label="Loading admin dashboard..." fullScreen />;
+  }
+
+  if (isAuthenticated && user?.role !== "admin") {
+    return <ForbiddenFallback requiredRole="admin" />;
   }
 
   return (

@@ -20,6 +20,7 @@ import { Button } from "../ui/button";
 import MedicalNotesDisplay from "../MedicalNotesDisplay";
 import { formatTimeInterval, getLocalDateString } from "../../lib/formatters";
 import type { useAdminDashboard } from "../../hooks/useAdminDashboard";
+import { EmptyState } from "../shared/EmptyState";
 
 interface AdminTabsProps {
   admin: ReturnType<typeof useAdminDashboard>;
@@ -182,15 +183,11 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
               Loading pending appointment requests...
             </div>
           ) : !admin.pendingAppointments || admin.pendingAppointments.length === 0 ? (
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-12 text-center max-w-md mx-auto my-6">
-              <div className="w-16 h-16 rounded-full bg-green-50 text-green-600 flex items-center justify-center mx-auto mb-4 font-bold text-xl">
-                ✓
-              </div>
-              <h3 className="font-bold text-lg text-[#0F172A] mb-2">All Clear!</h3>
-              <p className="text-sm text-[#64748B] leading-relaxed">
-                There are currently no pending appointment requests awaiting administrative approval.
-              </p>
-            </div>
+            <EmptyState
+              title="All Clear!"
+              description="There are currently no pending appointment requests awaiting administrative approval."
+              className="bg-white my-6"
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {admin.pendingAppointments.map((appt: any) => (
@@ -689,17 +686,16 @@ export const AdminTabs: React.FC<AdminTabsProps> = ({ admin }) => {
 
             if (filteredSlots.length === 0) {
               return (
-                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-12 text-center max-w-md mx-auto my-6">
-                  <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mx-auto mb-4">
-                    <Calendar size={32} />
-                  </div>
-                  <h3 className="font-bold text-lg text-[#0F172A] mb-2">No Slots Found</h3>
-                  <p className="text-sm text-[#64748B] leading-relaxed">
-                    {slotsFilterDoctorId || slotsDateFilter
+                <EmptyState
+                  title="No Slots Found"
+                  description={
+                    slotsFilterDoctorId || slotsDateFilter
                       ? "No consultation slots match the selected date or doctor filter."
-                      : "No consultation slots have been created yet."}
-                  </p>
-                </div>
+                      : "No consultation slots have been created yet."
+                  }
+                  icon={Calendar}
+                  className="bg-white my-6"
+                />
               );
             }
 

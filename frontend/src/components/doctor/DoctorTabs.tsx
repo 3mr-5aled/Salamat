@@ -23,6 +23,7 @@ import { buildConsultationPrintHTML } from "../../lib/printHelper";
 
 import { useProfile } from "../../hooks/useProfile";
 import { DoctorProfileForm } from "../profile/DoctorProfileForm";
+import { EmptyState } from "../shared/EmptyState";
 import { DatePicker } from "../ui/date-picker";
 import type { useDoctorDashboard } from "../../hooks/useDoctorDashboard";
 
@@ -217,15 +218,12 @@ export const DoctorTabs: React.FC<DoctorTabsProps> = ({ doctor, user }) => {
 
             if (slotsWithPatients.length === 0) {
               return (
-                <div className="w-full bg-white rounded-3xl border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.02)] p-12 flex flex-col items-center justify-center text-center my-6">
-                  <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 mb-4">
-                    <CalendarDays size={32} />
-                  </div>
-                  <h3 className="font-bold text-lg text-[#0F172A] mb-2">No Registered Visits</h3>
-                  <p className="text-sm text-[#64748B] max-w-md leading-relaxed">
-                    No patients have registered for your consultation slots yet.
-                  </p>
-                </div>
+                <EmptyState
+                  title="No Registered Visits"
+                  description="No patients have registered for your consultation slots yet."
+                  icon={CalendarDays}
+                  className="bg-white my-6"
+                />
               );
             }
 

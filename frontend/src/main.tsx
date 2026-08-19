@@ -18,8 +18,9 @@ import { Route as profileRoute } from "./routes/profile";
 import { Route as forgotPasswordRoute } from "./routes/forgot-password";
 import { Route as adminRoute } from "./routes/admin";
 import { Route as verifyEmailRoute } from "./routes/verify-email";
-import { Route as notFoundRoute } from "./routes/not-found";
+import { Route as notFoundRoute, NotFoundComponent } from "./routes/not-found";
 import { Route as maintenanceRoute } from "./routes/maintenance";
+import { GlobalErrorFallback } from "./components/shared/GlobalErrorFallback";
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -36,7 +37,13 @@ const routeTree = rootRoute.addChildren([
   notFoundRoute,
 ]);
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  defaultNotFoundComponent: NotFoundComponent,
+  defaultErrorComponent: ({ error, reset }: any) => (
+    <GlobalErrorFallback error={error} reset={reset} />
+  ),
+});
 
 declare module "@tanstack/react-router" {
   interface Register {

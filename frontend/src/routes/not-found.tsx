@@ -3,13 +3,7 @@ import { rootRoute } from "./__root";
 import { useAuth } from "../contexts/AuthContext";
 import { Home, ArrowLeft, SearchX } from "lucide-react";
 
-export const Route = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "$",
-  component: NotFoundComponent,
-});
-
-function NotFoundComponent() {
+export function NotFoundComponent() {
   const { user, isAuthenticated } = useAuth();
 
   const dashboardPath =
@@ -18,6 +12,13 @@ function NotFoundComponent() {
       : isAuthenticated
         ? "/app"
         : "/";
+
+  const buttonLabel =
+    !isAuthenticated
+      ? "Go to Home"
+      : user?.role === "admin"
+        ? "Go to Admin Panel"
+        : "Go to Dashboard";
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-slate-50/50">
@@ -50,7 +51,7 @@ function NotFoundComponent() {
             className="flex items-center gap-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-bold px-6 py-3 rounded-xl shadow-[0_4px_12px_rgba(37,99,235,0.15)] hover:shadow-[0_4px_20px_rgba(37,99,235,0.25)] transition-all duration-200"
           >
             <Home size={16} />
-            <span>Go to Dashboard</span>
+            <span>{buttonLabel}</span>
           </Link>
           <button
             onClick={() => window.history.back()}
@@ -64,3 +65,9 @@ function NotFoundComponent() {
     </div>
   );
 }
+
+export const Route = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "$",
+  component: NotFoundComponent,
+});
